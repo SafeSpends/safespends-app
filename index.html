@@ -7,25 +7,25 @@
 <title>SafeSpends — ADHD Budget Planner</title>
 <style>
   :root{
-    --bg:#f4f3fa; --bg-soft:#ece8f6; --card:#ffffff; --ink:#211d2e; --muted:#6e6784;
-    --line:#e3dcf2; --primary:#6c4fc4; --primary-dark:#4f369c; --primary-soft:#e9e2f8;
+    --bg:#f6f7f9; --bg-soft:#eceef1; --card:#ffffff; --ink:#16181d; --muted:#667085;
+    --line:#e4e7ee; --primary:#6c4fc4; --primary-dark:#4f369c; --primary-soft:#efeaf9;
     --gold:#d9a441; --gold-soft:#f7ecd2; --rose:#cf6f74; --rose-soft:#f7dcd7;
     --mint:#4e9c6e; --lav:#a98fe8;
-    --shadow:0 18px 45px rgba(33,29,46,.09);
-    --hero-grad:linear-gradient(94deg,#6c4fc4 5%,#2a2140 50%,#6c4fc4 100%);
-    --serif:"Fraunces","Playfair Display",Georgia,"Times New Roman",serif;
+    --shadow:0 1px 2px rgba(16,24,40,.05);
+    --hero-grad:linear-gradient(94deg,#54389e 0%,#6c4fc4 55%,#8a6fd6 100%);
+    --serif:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
     --sans:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-    --radius:22px;
-    --chip-everyday:#d9cff2; --chip-groceries:#bfe9db; --chip-food:#f5cfae;
-    --chip-transport:#c6e0f4; --chip-fun:#f3c6d3; --chip-other:#f3e4b4;
+    --radius:18px;
+    --chip-everyday:#e2dcf2; --chip-groceries:#cfe9db; --chip-food:#f6ddba;
+    --chip-transport:#d3e3f2; --chip-fun:#f4d2dc; --chip-other:#f1e5ba;
   }
   [data-theme="dark"]{
-    --bg:#101724; --bg-soft:#0c121f; --card:#1b2436; --ink:#edeff4; --muted:#9aa3b8;
-    --line:#2b3750; --primary:#b79dff; --primary-dark:#d3c2ff; --primary-soft:#262048;
+    --bg:#0e131c; --bg-soft:#0a0e15; --card:#161e2b; --ink:#edeff4; --muted:#9aa3b8;
+    --line:#232d40; --primary:#b79dff; --primary-dark:#d3c2ff; --primary-soft:#262048;
     --gold:#dcbc66; --gold-soft:#2e2716; --rose:#f0927c; --rose-soft:#38231f;
     --mint:#7fd6a4; --lav:#8f7fe0;
-    --shadow:0 18px 45px rgba(0,0,0,.45);
-    --hero-grad:linear-gradient(94deg,#ffffff 5%,#b79dff 55%,#7fd6a4 110%);
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+    --hero-grad:linear-gradient(94deg,#ffffff 5%,#b79dff 60%,#8f7fe0 110%);
     --chip-everyday:#332a55; --chip-groceries:#1e3a31; --chip-food:#3a2c1e;
     --chip-transport:#1e3049; --chip-fun:#3d2432; --chip-other:#37311c;
   }
@@ -41,7 +41,7 @@
   .brand{display:flex;align-items:center;gap:12px}
   .coin{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a8,#e6a817 60%,#b97e08);display:grid;place-items:center;color:#fff;font-family:var(--serif);font-weight:700;font-size:23px;box-shadow:inset 0 0 0 3px rgba(255,255,255,.5);flex:0 0 auto}
   .brand-name{font-family:var(--serif);font-size:24px;line-height:1;color:var(--ink)}
-  .brand-name em{font-style:italic;color:var(--primary)}
+  .brand-name em{font-style:normal;color:var(--primary)}
   .brand small{display:block;font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:3px;letter-spacing:.02em}
   .top-actions{display:flex;gap:8px;align-items:center}
   .pill-btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:9px 14px;font-weight:700;font-size:13px}
@@ -56,13 +56,13 @@
   .rail-nav{display:grid;gap:6px}
   .rail-link{border:0;background:transparent;text-align:left;padding:12px 14px;border-radius:14px;font-weight:800;color:var(--muted);font-size:15px}
   .rail-link:hover{background:var(--bg-soft);color:var(--ink)}
-  .rail-link.active{background:var(--primary);color:#fff;box-shadow:0 8px 20px rgba(108,79,196,.28)}
+  .rail-link.active{background:var(--primary);color:#fff;box-shadow:none}
   [data-theme="dark"] .rail-link.active{color:#17102e}
   .rail-stat span{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;font-weight:800;margin-bottom:4px}
   .rail-stat strong{font-family:var(--serif);font-size:24px}
   .rail .mini{font-size:13px;color:var(--muted);line-height:1.5}
 
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:26px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px}
   .eyebrow{text-transform:uppercase;letter-spacing:.13em;font-size:11.5px;font-weight:800;color:var(--primary);margin:0 0 8px}
   h2{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.6vw,40px);line-height:1.1;margin:0 0 10px;letter-spacing:-.01em}
   h3{font-family:var(--serif);font-weight:600;font-size:22px;margin:0 0 8px}
@@ -81,7 +81,7 @@
   .progress{height:8px;background:var(--bg-soft);border-radius:999px;overflow:hidden;margin:16px 0 26px}
   .progress span{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--gold));width:16.66%;transition:width .3s ease;border-radius:999px}
   .wizard-step{min-height:320px}
-  .serif-note{font-family:var(--serif);font-style:italic;color:var(--muted);font-size:17px}
+  .serif-note{font-family:var(--serif);font-style:normal;color:var(--muted);font-size:17px}
   .field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
   .field{display:flex;flex-direction:column;gap:7px}
   .field.full{grid-column:1/-1}
@@ -90,7 +90,7 @@
   input,select,textarea{width:100%;border:1.5px solid var(--line);background:var(--card);border-radius:13px;padding:12px 13px;color:var(--ink);outline:none}
   input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 4px color-mix(in srgb,var(--primary) 18%,transparent)}
   .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:22px}
-  .btn{border:0;border-radius:999px;padding:12px 20px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:47px}
+  .btn{border:0;border-radius:14px;padding:12px 20px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:47px}
   .btn-primary{background:var(--primary);color:#fff}
   .btn-primary:hover{background:var(--primary-dark)}
   [data-theme="dark"] .btn-primary{color:#17102e}
@@ -121,11 +121,11 @@
   .status-line strong{color:var(--ink);font-family:var(--serif);font-weight:600}
 
   /* Hero */
-  .hero-card{padding:30px;margin-bottom:18px;position:relative;overflow:hidden}
-  .hero-card:before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--primary),var(--lav),var(--gold))}
-  .hero-number{font-family:var(--serif);font-weight:600;font-size:clamp(64px,11vw,118px);line-height:1.02;letter-spacing:-.02em;margin:8px 0 4px;background:var(--hero-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .hero-sub{font-family:var(--serif);font-style:italic;font-size:clamp(16px,2.4vw,19px);color:var(--muted);margin:0}
-  .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px}
+  .hero-card{padding:26px;margin-bottom:18px;position:relative;overflow:hidden}
+  .hero-card:before{display:none}
+  .hero-number{font-family:var(--sans);font-weight:800;font-size:clamp(56px,9vw,88px);line-height:1.05;letter-spacing:-.03em;margin:8px 0 4px;color:var(--ink)}
+  .hero-sub{font-family:var(--serif);font-style:normal;font-size:clamp(16px,2.4vw,19px);color:var(--muted);margin:0}
+  .hero-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:24px}
   .stat{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px}
   .stat span{display:block;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;font-weight:800;margin-bottom:5px}
   .stat strong{font-family:var(--serif);font-size:20px}
@@ -140,7 +140,7 @@
   body.focus-on .below-hero{opacity:.35;filter:saturate(.5);pointer-events:none}
   .below-hero{transition:opacity .3s ease,filter .3s ease}
 
-  .onething{background:linear-gradient(120deg,var(--primary-dark),var(--primary));color:#f0ebff;border-radius:var(--radius);padding:20px 24px;margin-bottom:18px;box-shadow:var(--shadow)}
+  .onething{background:var(--primary-dark);color:#f0ebff;border-radius:var(--radius);padding:20px 24px;margin-bottom:18px;box-shadow:var(--shadow)}
   [data-theme="dark"] .onething{background:linear-gradient(120deg,#241a4d,#3a2a6e)}
   .onething .eyebrow{color:#cdbffb}
   .onething p{margin:0;font-size:17px;line-height:1.5}
@@ -155,7 +155,7 @@
   .thing .t-text{font-weight:650;line-height:1.45}
   .thing.done .t-text{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1.5px}
   .thing .t-time{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em}
-  .things-count{font-family:var(--serif);font-style:italic;color:var(--muted);margin:12px 0 0;font-size:15.5px}
+  .things-count{font-family:var(--serif);font-style:normal;color:var(--muted);margin:12px 0 0;font-size:15.5px}
 
   /* Quick add */
   .quick-form{display:grid;grid-template-columns:150px 1fr auto;gap:11px;align-items:end}
@@ -216,27 +216,40 @@
   .win{display:inline-flex;gap:8px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:9px 14px;font-size:14px;font-weight:650}
   .win .tick{color:var(--mint);font-weight:900}
 
-  .statusbar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:25;background:var(--primary-dark);color:#e9e2ff;border-radius:999px;padding:11px 20px;font-size:13.5px;font-weight:700;box-shadow:0 16px 35px rgba(60,40,140,.35);display:flex;gap:9px;align-items:center;white-space:nowrap;max-width:calc(100vw - 24px);overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-  .statusbar::-webkit-scrollbar{display:none}
-  .statusbar>*{flex:0 0 auto}
+  .statusbar{background:var(--primary-dark);color:#e9e2ff;border-radius:20px;padding:14px 20px;font-size:13.5px;font-weight:700;box-shadow:none;display:flex;gap:9px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:18px;text-align:center}
   [data-theme="dark"] .statusbar{background:#1e1838;color:#d9d0ff}
   .statusbar .sep{opacity:.45}
-  .tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:30;background:color-mix(in srgb,var(--card) 96%,transparent);border:1px solid var(--line);box-shadow:0 14px 35px rgba(31,41,55,.18);border-radius:999px;padding:6px;display:none;gap:4px;max-width:calc(100vw - 24px);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:30;background:color-mix(in srgb,var(--card) 96%,transparent);border:1px solid var(--line);box-shadow:0 4px 16px rgba(16,24,40,.08);border-radius:999px;padding:6px;display:none;gap:4px;max-width:calc(100vw - 24px);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   .tabs::-webkit-scrollbar{display:none}
   .tab{border:0;background:transparent;border-radius:999px;padding:10px 15px;font-weight:800;color:var(--muted);white-space:nowrap;flex:0 0 auto}
   .tab.active{background:var(--primary);color:#fff}
   [data-theme="dark"] .tab.active{color:#17102e}
+  button{touch-action:manipulation}
+  .tab-plus{flex:0 0 auto;width:52px;height:52px;border-radius:50%;border:0;background:var(--primary);color:#fff;font-size:30px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(108,79,196,.35);cursor:pointer;margin:-14px 2px 0;position:relative;z-index:1}
+  .sheet{position:fixed;inset:0;z-index:55}
+  .sheet-backdrop{position:absolute;inset:0;background:rgba(10,12,20,.45)}
+  .sheet-panel{position:absolute;left:0;right:0;bottom:0;max-height:86vh;overflow-y:auto;background:var(--bg);border-radius:24px 24px 0 0;padding:20px 16px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;box-shadow:0 -8px 30px rgba(16,24,40,.18)}
+  .sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:2px}
+  .sheet-title{margin:2px 0 0;font-size:22px;letter-spacing:-.01em}
+  .sheet-close{flex:0 0 auto}
+  .sheet-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;cursor:pointer;color:var(--ink);font:inherit}
+  .sheet-row strong{display:block;font-size:16.5px;font-weight:800}
+  .sheet-row small{display:block;margin-top:2px;font-size:13px;color:var(--muted);font-weight:600}
+  .sheet-row .chev{color:var(--muted);font-size:22px;font-weight:700;flex:0 0 auto}
+  .sheet-row-primary{background:var(--primary);border-color:var(--primary);color:#fff}
+  .sheet-row-primary small{color:#e9e2ff}
+  .sheet-row-primary .chev{color:#e9e2ff}
   .toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-15px);background:var(--primary-dark);color:#fff;padding:12px 18px;border-radius:999px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.25s ease;z-index:60;font-weight:700;max-width:calc(100vw - 30px);text-align:center}
   [data-theme="dark"] .toast{color:#17102e}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .footer-note{text-align:center;color:var(--muted);font-size:13px;margin-top:24px;line-height:1.5}
 
   /* Strategy + simulator */
-  .seg{display:inline-flex;flex-wrap:wrap;background:var(--bg-soft);border:1px solid var(--line);border-radius:999px;padding:4px;gap:4px}
-  .seg button{border:0;background:transparent;border-radius:999px;padding:9px 16px;font-weight:800;color:var(--muted)}
+  .seg{display:inline-flex;flex-wrap:wrap;background:var(--bg-soft);border:1px solid var(--line);border-radius:999px;padding:4px;gap:4px;max-width:100%;box-sizing:border-box}
+  .seg button{border:0;background:transparent;border-radius:999px;padding:9px 16px;font-weight:800;color:var(--muted);flex:1 1 auto;min-width:0;text-align:center}
   .seg button.active{background:var(--primary);color:#fff}
   [data-theme="dark"] .seg button.active{color:#17102e}
-  .sim-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+  .sim-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}
   .sim-stat{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px}
   .sim-stat span{display:block;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;font-weight:800;margin-bottom:5px}
   .sim-stat strong{font-family:var(--serif);font-size:19px}
@@ -251,9 +264,9 @@
   .putin input{max-width:150px}
   /* Calendar */
   .cal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:14px}
   .cal-dow{text-align:center;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:4px 0}
-  .cal-day{border:1px solid var(--line);border-radius:12px;min-height:74px;padding:6px;background:var(--card);text-align:left;display:flex;flex-direction:column;gap:3px;color:var(--ink)}
+  .cal-day{border:1px solid var(--line);border-radius:12px;min-height:74px;padding:6px;background:var(--card);text-align:left;display:flex;flex-direction:column;gap:3px;color:var(--ink);min-width:0;overflow:hidden}
   .cal-day.dim{opacity:.38}
   .cal-day.today{border-color:var(--primary);box-shadow:0 0 0 2px color-mix(in srgb,var(--primary) 25%,transparent)}
   .cal-day.sel{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 35%,transparent)}
@@ -274,16 +287,21 @@
   @media (max-width:900px){
     .shell{grid-template-columns:1fr}
     .rail{display:none}
-    .tabs{display:flex;width:calc(100vw - 20px);justify-content:space-between;border-radius:22px}
+    .tabs{display:flex;width:calc(100vw - 20px);justify-content:space-between;align-items:center;border-radius:22px;overflow:visible;padding:8px 10px}
     .tab{padding:12px 8px;font-size:12.5px;flex:1}
-    .statusbar{bottom:86px;font-size:12.5px;padding:9px 15px}
-    main{padding:16px 12px 170px}
+    .statusbar{font-size:12.5px;padding:12px 14px}
+    main{padding:16px 12px 120px}
   }
   @media (max-width:680px){
+    .seg{display:flex;flex-direction:column;width:100%;border-radius:18px}
+    .seg button{width:100%;border-radius:13px;padding:11px 12px}
+    .statusbar{flex-wrap:nowrap;gap:6px;font-size:12px;padding:12px 10px;overflow:hidden}
+    .statusbar .sb-save,.statusbar .sb-save-sep{display:none}
+    .statusbar span{white-space:nowrap}
     .card{padding:19px}
     input,select,textarea{font-size:16px}
     .field-grid,.grid-2{grid-template-columns:1fr}
-    .hero-stats{grid-template-columns:repeat(3,1fr);gap:8px}
+    .hero-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
     .stat{padding:10px}.stat strong{font-size:15px}
     .quick-form{grid-template-columns:1fr}
     .privacy-pill{display:none}
@@ -502,7 +520,6 @@
                 <button class="btn btn-primary" id="logSpendBtn" type="button">Log a spend</button>
               </div>
             </div>
-            <p class="status-line"><strong id="statusTitle">You’re on track</strong> · <span id="statusText">Your known bills before payday are protected.</span></p>
           </div>
 
           <!-- One thing -->
@@ -533,6 +550,8 @@
             </div>
             <div class="notice notice-teal focus-note hidden" id="focusNote">Focus is on. Everything below is softer, so the number stays in charge.</div>
           </div>
+
+          <div class="statusbar" id="statusBar"><span id="sbMonth">—</span><span class="sep">·</span><span id="sbDays">—</span><span class="sep">·</span><span id="sbPool">—</span><span class="sep sb-save-sep">·</span><span class="sb-save">saved on this device</span></div>
 
           <!-- Three small things -->
           <section class="card below-hero">
@@ -619,7 +638,7 @@
                 <circle id="donutSpent" cx="75" cy="75" r="52" fill="none" stroke="#cf6f74" stroke-width="17" stroke-linecap="round" transform="rotate(-90 75 75)"/>
                 <circle id="donutProt" cx="75" cy="75" r="52" fill="none" stroke="#a98fe8" stroke-width="17" stroke-linecap="round" transform="rotate(-90 75 75)"/>
                 <circle id="donutSafe" cx="75" cy="75" r="52" fill="none" stroke="#4e9c6e" stroke-width="17" stroke-linecap="round" transform="rotate(-90 75 75)"/>
-                <text id="donutCenter" x="75" y="72" text-anchor="middle" font-family="Georgia,serif" font-size="21" font-weight="600" fill="var(--ink)">—</text>
+                <text id="donutCenter" x="75" y="72" text-anchor="middle" font-family="system-ui,sans-serif" font-size="21" font-weight="600" fill="var(--ink)">—</text>
                 <text x="75" y="92" text-anchor="middle" font-size="10.5" fill="var(--muted)">STILL SAFE</text>
               </svg>
               <div class="donut-legend">
@@ -946,21 +965,39 @@
       </div>
     </div>
 
-    <div class="statusbar" id="statusBar"><span id="sbMonth">—</span><span class="sep">·</span><span id="sbDays">—</span><span class="sep">·</span><span id="sbPool">—</span><span class="sep">·</span><span>saved on this device</span></div>
   </div>
 </main>
 
 <nav id="bottomNav" class="tabs hidden" aria-label="Main">
   <button class="tab active" data-view="home" type="button">Today</button>
   <button class="tab" data-view="bills" type="button">Bills</button>
-  <button class="tab" data-view="moneyin" data-adv type="button">Money in</button>
+  <button class="tab-plus" id="moreBtn" type="button" aria-label="Open the full planner menu">+</button>
   <button class="tab" data-view="debts" data-adv type="button">Debts</button>
   <button class="tab" data-view="goals" type="button">Goals</button>
-  <button class="tab" data-view="envelopes" data-adv type="button">Envelopes</button>
-  <button class="tab" data-view="milestones" data-adv type="button">Milestones</button>
-  <button class="tab" data-view="month" data-adv type="button">Month</button>
-  <button class="tab" data-view="settings" type="button">Settings</button>
 </nav>
+
+<div id="moreSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Planner menu">
+  <div class="sheet-backdrop" data-close-sheet></div>
+  <div class="sheet-panel">
+    <div class="sheet-head">
+      <div>
+        <p class="eyebrow">More</p>
+        <h3 class="sheet-title">All of your planner</h3>
+      </div>
+      <button class="btn sheet-close" type="button" data-close-sheet>Close</button>
+    </div>
+    <button class="sheet-row sheet-row-primary" type="button" id="sheetLogSpend"><span><strong>Log a spend</strong><small>add the exact amount you spent</small></span><span class="chev">›</span></button>
+    <button class="sheet-row" type="button" data-goto="home"><span><strong>Today</strong><small>your Safe-to-Spend number for today</small></span><span class="chev">›</span></button>
+    <button class="sheet-row" type="button" data-goto="bills"><span><strong>Bills</strong><small>due dates, and what is already protected</small></span><span class="chev">›</span></button>
+    <button class="sheet-row" type="button" data-goto="moneyin" data-adv><span><strong>Money in</strong><small>paydays and money on its way in</small></span><span class="chev">›</span></button>
+    <button class="sheet-row" type="button" data-goto="debts" data-adv><span><strong>Debts</strong><small>payoff order and your debt-free date</small></span><span class="chev">›</span></button>
+    <button class="sheet-row" type="button" data-goto="goals"><span><strong>Goals</strong><small>what you are putting money towards</small></span><span class="chev">›</span></button>
+    <button class="sheet-row" type="button" data-goto="envelopes" data-adv><span><strong>Envelopes</strong><small>simple limits for day-to-day spending</small></span><span class="chev">›</span></button>
+    <button class="sheet-row" type="button" data-goto="milestones" data-adv><span><strong>Milestones</strong><small>your small wins, kept for good</small></span><span class="chev">›</span></button>
+    <button class="sheet-row" type="button" data-goto="month" data-adv><span><strong>Month</strong><small>the whole month on one calendar</small></span><span class="chev">›</span></button>
+    <button class="sheet-row" type="button" data-goto="settings"><span><strong>Settings</strong><small>money, payday, look and your data</small></span><span class="chev">›</span></button>
+  </div>
+</div>
 
 <script>
 'use strict';
@@ -1583,17 +1620,6 @@ function renderAll(){
     $('oneThingText').textContent = 'Nothing is due before payday. The number above is yours to use, gently.';
   }
 
-  if(calc.rawPool < 0){
-    $('statusTitle').textContent = 'Let’s adjust gently';
-    $('statusText').textContent = `bills, minimums and savings are ${money(Math.abs(calc.rawPool),cur)} more than the balance before payday. One small change is enough to start.`;
-  }else if(calc.pool === 0){
-    $('statusTitle').textContent = 'Everything is protected';
-    $('statusText').textContent = 'there is no extra pool left this period, and your essentials are covered by the plan.';
-  }else{
-    $('statusTitle').textContent = 'You’re on track';
-    $('statusText').textContent = 'your bills and minimum payments before payday are protected first, and the rest is honestly yours.';
-  }
-
   const focusOn = !!state.focusMode;
   document.body.classList.toggle('focus-on', focusOn);
   $('focusToggle').setAttribute('aria-pressed', String(focusOn));
@@ -1851,7 +1877,7 @@ function renderGoals(){
     else reach = '';
     const len = pct / 100 * C;
     return `<div class="item" style="display:block"><div class="goal-top">
-      <svg width="76" height="76" viewBox="0 0 76 76" aria-hidden="true"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--bg-soft)" stroke-width="9"/><circle cx="38" cy="38" r="30" fill="none" stroke="var(--mint)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${Math.max(0, len - 2)} ${C}" transform="rotate(-90 38 38)"/><text x="38" y="43" text-anchor="middle" font-family="Georgia,serif" font-size="15" font-weight="600" fill="var(--ink)">${pct}%</text></svg>
+      <svg width="76" height="76" viewBox="0 0 76 76" aria-hidden="true"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--bg-soft)" stroke-width="9"/><circle cx="38" cy="38" r="30" fill="none" stroke="var(--mint)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${Math.max(0, len - 2)} ${C}" transform="rotate(-90 38 38)"/><text x="38" y="43" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" font-weight="600" fill="var(--ink)">${pct}%</text></svg>
       <div class="goal-info">
         <div class="item-title">${escapeHtml(g.name)}</div>
         <div class="item-meta">${money(saved, state.currency)} of ${money(target, state.currency)}${reach ? ' · ' + reach : ''}</div>
@@ -2349,6 +2375,13 @@ function init(){
     setDefaultDates(); syncWizardFromState(); showWizard(); showToast('Demo reset. Start fresh whenever you are ready.');
   });
   document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.view)));
+  const moreSheet = $('moreSheet');
+  const openSheet = ()=>{ if(moreSheet) moreSheet.classList.remove('hidden'); };
+  const closeSheet = ()=>{ if(moreSheet) moreSheet.classList.add('hidden'); };
+  if($('moreBtn')) $('moreBtn').addEventListener('click', openSheet);
+  document.querySelectorAll('[data-close-sheet]').forEach(el=>el.addEventListener('click', closeSheet));
+  document.querySelectorAll('[data-goto]').forEach(btn=>btn.addEventListener('click',()=>{ closeSheet(); switchView(btn.dataset.goto); }));
+  if($('sheetLogSpend')) $('sheetLogSpend').addEventListener('click', ()=>{ closeSheet(); const b = $('logSpendBtn'); if(b) b.click(); });
   initExtras();
 }
 

@@ -1,0 +1,2363 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#6c4fc4">
+<title>SafeSpends — ADHD Budget Planner</title>
+<style>
+  :root{
+    --bg:#f4f3fa; --bg-soft:#ece8f6; --card:#ffffff; --ink:#211d2e; --muted:#6e6784;
+    --line:#e3dcf2; --primary:#6c4fc4; --primary-dark:#4f369c; --primary-soft:#e9e2f8;
+    --gold:#d9a441; --gold-soft:#f7ecd2; --rose:#cf6f74; --rose-soft:#f7dcd7;
+    --mint:#4e9c6e; --lav:#a98fe8;
+    --shadow:0 18px 45px rgba(33,29,46,.09);
+    --hero-grad:linear-gradient(94deg,#6c4fc4 5%,#2a2140 50%,#6c4fc4 100%);
+    --serif:"Fraunces","Playfair Display",Georgia,"Times New Roman",serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    --radius:22px;
+    --chip-everyday:#d9cff2; --chip-groceries:#bfe9db; --chip-food:#f5cfae;
+    --chip-transport:#c6e0f4; --chip-fun:#f3c6d3; --chip-other:#f3e4b4;
+  }
+  [data-theme="dark"]{
+    --bg:#101724; --bg-soft:#0c121f; --card:#1b2436; --ink:#edeff4; --muted:#9aa3b8;
+    --line:#2b3750; --primary:#b79dff; --primary-dark:#d3c2ff; --primary-soft:#262048;
+    --gold:#dcbc66; --gold-soft:#2e2716; --rose:#f0927c; --rose-soft:#38231f;
+    --mint:#7fd6a4; --lav:#8f7fe0;
+    --shadow:0 18px 45px rgba(0,0,0,.45);
+    --hero-grad:linear-gradient(94deg,#ffffff 5%,#b79dff 55%,#7fd6a4 110%);
+    --chip-everyday:#332a55; --chip-groceries:#1e3a31; --chip-food:#3a2c1e;
+    --chip-transport:#1e3049; --chip-fun:#3d2432; --chip-other:#37311c;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--ink);transition:background .25s ease,color .25s ease}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .hidden{display:none!important}
+
+  .topbar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .topbar-inner{max-width:1180px;margin:0 auto;padding:13px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .coin{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a8,#e6a817 60%,#b97e08);display:grid;place-items:center;color:#fff;font-family:var(--serif);font-weight:700;font-size:23px;box-shadow:inset 0 0 0 3px rgba(255,255,255,.5);flex:0 0 auto}
+  .brand-name{font-family:var(--serif);font-size:24px;line-height:1;color:var(--ink)}
+  .brand-name em{font-style:italic;color:var(--primary)}
+  .brand small{display:block;font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:3px;letter-spacing:.02em}
+  .top-actions{display:flex;gap:8px;align-items:center}
+  .pill-btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:9px 14px;font-weight:700;font-size:13px}
+  .privacy-pill{border:1px solid var(--primary-soft);background:var(--primary-soft);color:var(--primary-dark);padding:9px 12px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+  [data-theme="dark"] .privacy-pill{color:var(--primary-dark)}
+
+  main{max-width:1180px;margin:0 auto;padding:24px 20px 150px}
+  .shell{display:grid;grid-template-columns:250px minmax(0,1fr);gap:22px;align-items:start}
+
+  .rail{position:sticky;top:82px;display:grid;gap:16px}
+  .rail-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+  .rail-nav{display:grid;gap:6px}
+  .rail-link{border:0;background:transparent;text-align:left;padding:12px 14px;border-radius:14px;font-weight:800;color:var(--muted);font-size:15px}
+  .rail-link:hover{background:var(--bg-soft);color:var(--ink)}
+  .rail-link.active{background:var(--primary);color:#fff;box-shadow:0 8px 20px rgba(108,79,196,.28)}
+  [data-theme="dark"] .rail-link.active{color:#17102e}
+  .rail-stat span{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;font-weight:800;margin-bottom:4px}
+  .rail-stat strong{font-family:var(--serif);font-size:24px}
+  .rail .mini{font-size:13px;color:var(--muted);line-height:1.5}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:26px}
+  .eyebrow{text-transform:uppercase;letter-spacing:.13em;font-size:11.5px;font-weight:800;color:var(--primary);margin:0 0 8px}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.6vw,40px);line-height:1.1;margin:0 0 10px;letter-spacing:-.01em}
+  h3{font-family:var(--serif);font-weight:600;font-size:22px;margin:0 0 8px}
+  p{line-height:1.55}
+  .muted{color:var(--muted)} .small{font-size:13px}
+  .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .help-btn{flex:0 0 auto;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:var(--bg);color:var(--muted);font-weight:800;font-size:14px;line-height:1}
+  :focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;animation:none !important} }
+  .help-btn:hover{border-color:var(--primary);color:var(--primary)}
+  .help-panel{background:var(--bg-soft);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.55;color:var(--ink);margin:10px 0 4px}
+  .help-panel strong{color:var(--primary-dark)}
+  [data-theme="dark"] .help-panel strong{color:var(--primary)}
+
+  .wizard{max-width:780px;margin:10px auto}
+  .progress{height:8px;background:var(--bg-soft);border-radius:999px;overflow:hidden;margin:16px 0 26px}
+  .progress span{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--gold));width:16.66%;transition:width .3s ease;border-radius:999px}
+  .wizard-step{min-height:320px}
+  .serif-note{font-family:var(--serif);font-style:italic;color:var(--muted);font-size:17px}
+  .field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .field{display:flex;flex-direction:column;gap:7px}
+  .field.full{grid-column:1/-1}
+  label{font-weight:700;font-size:14px}
+  .help{font-size:13px;color:var(--muted);line-height:1.45}
+  input,select,textarea{width:100%;border:1.5px solid var(--line);background:var(--card);border-radius:13px;padding:12px 13px;color:var(--ink);outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 4px color-mix(in srgb,var(--primary) 18%,transparent)}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:22px}
+  .btn{border:0;border-radius:999px;padding:12px 20px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:47px}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-primary:hover{background:var(--primary-dark)}
+  [data-theme="dark"] .btn-primary{color:#17102e}
+  [data-theme="dark"] .btn-primary:hover{color:#17102e}
+  .btn-gold{background:var(--gold);color:#fff}
+  [data-theme="dark"] .btn-gold{color:#241a02}
+  .btn-soft{background:var(--primary-soft);color:var(--primary-dark);border:1px solid transparent}
+  [data-theme="dark"] .btn-soft{color:var(--primary)}
+  .btn-ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+  .btn-danger{background:var(--rose-soft);color:var(--rose);border:1px solid transparent}
+  .btn-small{padding:8px 13px;min-height:38px;font-size:13px}
+  .notice{border-radius:16px;padding:15px 17px;line-height:1.55}
+  .notice-teal{background:var(--primary-soft)}
+  .notice-gold{background:var(--gold-soft)}
+  .mini-list{display:grid;gap:9px;margin-top:14px}
+  .mini-item{display:flex;justify-content:space-between;gap:12px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:11px 13px}
+
+  /* Greeting */
+  .greet{margin:4px 0 18px}
+  .greet-row{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px}
+  .greet h2{margin:0}
+  .greet-controls{display:flex;gap:8px;align-items:center}
+  .focus-toggle{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:10px 14px;font-weight:800;font-size:13px;min-height:47px}
+  .focus-toggle .dot{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+  .focus-toggle[aria-pressed="true"]{border-color:var(--primary);color:var(--primary)}
+  .focus-toggle[aria-pressed="true"] .dot{background:var(--primary)}
+  .status-line{margin:8px 0 0;font-size:15.5px;color:var(--muted)}
+  .status-line strong{color:var(--ink);font-family:var(--serif);font-weight:600}
+
+  /* Hero */
+  .hero-card{padding:30px;margin-bottom:18px;position:relative;overflow:hidden}
+  .hero-card:before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--primary),var(--lav),var(--gold))}
+  .hero-number{font-family:var(--serif);font-weight:600;font-size:clamp(64px,11vw,118px);line-height:1.02;letter-spacing:-.02em;margin:8px 0 4px;background:var(--hero-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero-sub{font-family:var(--serif);font-style:italic;font-size:clamp(16px,2.4vw,19px);color:var(--muted);margin:0}
+  .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px}
+  .stat{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px}
+  .stat span{display:block;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;font-weight:800;margin-bottom:5px}
+  .stat strong{font-family:var(--serif);font-size:20px}
+  .preset-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;align-items:center}
+  .preset-row .plabel{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-right:2px}
+  .preset-chip{border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:9px 14px;font-weight:700;font-size:13.5px}
+  .preset-chip:hover{border-color:var(--primary);color:var(--primary)}
+  .preset-chip b{font-family:var(--serif)}
+  .how-toggle{margin-top:18px;background:none;border:0;padding:0;color:var(--primary);font-weight:800;font-size:14.5px;text-decoration:underline;text-underline-offset:3px}
+  .hero-breakdown{margin-top:14px;border-top:1px solid var(--line);padding-top:6px}
+  .focus-note{margin-top:16px}
+  body.focus-on .below-hero{opacity:.35;filter:saturate(.5);pointer-events:none}
+  .below-hero{transition:opacity .3s ease,filter .3s ease}
+
+  .onething{background:linear-gradient(120deg,var(--primary-dark),var(--primary));color:#f0ebff;border-radius:var(--radius);padding:20px 24px;margin-bottom:18px;box-shadow:var(--shadow)}
+  [data-theme="dark"] .onething{background:linear-gradient(120deg,#241a4d,#3a2a6e)}
+  .onething .eyebrow{color:#cdbffb}
+  .onething p{margin:0;font-size:17px;line-height:1.5}
+  .onething strong{color:#fff}
+
+  /* Three small things */
+  .thing{display:flex;gap:13px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--line)}
+  .thing:last-of-type{border-bottom:0}
+  .thing .box{flex:0 0 auto;width:27px;height:27px;border-radius:9px;border:2px solid var(--line);background:var(--bg);display:grid;place-items:center;color:#fff;font-size:15px;font-weight:900;margin-top:1px}
+  .thing.done .box{background:var(--mint);border-color:var(--mint)}
+  .thing .t-main{flex:1}
+  .thing .t-text{font-weight:650;line-height:1.45}
+  .thing.done .t-text{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1.5px}
+  .thing .t-time{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+  .things-count{font-family:var(--serif);font-style:italic;color:var(--muted);margin:12px 0 0;font-size:15.5px}
+
+  /* Quick add */
+  .quick-form{display:grid;grid-template-columns:150px 1fr auto;gap:11px;align-items:end}
+  .amt-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .amt-chip{border:1.5px dashed color-mix(in srgb,var(--gold) 55%,var(--line));background:var(--gold-soft);color:var(--ink);border-radius:999px;padding:8px 14px;font-weight:800;font-size:13.5px}
+  .amt-chip:hover{border-style:solid}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .chip{border:1.5px solid transparent;border-radius:999px;padding:8px 13px;font-size:13px;font-weight:700;color:var(--ink)}
+  .chip[data-category="Everyday"]{background:var(--chip-everyday)}
+  .chip[data-category="Groceries"]{background:var(--chip-groceries)}
+  .chip[data-category="Food out"]{background:var(--chip-food)}
+  .chip[data-category="Transport"]{background:var(--chip-transport)}
+  .chip[data-category="Fun"]{background:var(--chip-fun)}
+  .chip[data-category="Other"]{background:var(--chip-other)}
+  .chip.active{background:var(--primary);color:#fff}
+  [data-theme="dark"] .chip.active{color:#17102e}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .section{margin-top:18px}
+  .row{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:0}
+  .row.total{font-weight:900;font-size:17px;color:var(--primary)}
+  .list{display:grid;gap:10px;margin-top:12px}
+  .item{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;border:1px solid var(--line);background:var(--card);border-radius:16px;padding:14px}
+  .item-title{font-weight:800}
+  .item-meta{color:var(--muted);font-size:13px;margin-top:3px;line-height:1.45}
+  .item-amount{font-weight:900;white-space:nowrap;font-family:var(--serif);font-size:17px}
+  .item-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+  .date-badge{flex:0 0 auto;text-align:center;background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:7px 9px;min-width:52px}
+  .date-badge strong{display:block;font-family:var(--serif);font-size:17px;line-height:1}
+  .date-badge span{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:800}
+  .empty{border:1.5px dashed var(--line);border-radius:16px;padding:18px;text-align:center;color:var(--muted);background:var(--bg);line-height:1.5}
+
+  /* Notes */
+  .note-form{display:flex;gap:9px}
+  .note-form input{flex:1}
+  .note-item{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:11px 13px}
+  .note-item p{margin:0;line-height:1.45}
+  .note-item .n-meta{font-size:12px;color:var(--muted);margin-top:3px}
+
+  /* Month visuals */
+  .donut-wrap{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+  .donut-legend{display:grid;gap:11px;flex:1;min-width:210px}
+  .legend-row{display:flex;align-items:center;gap:10px}
+  .legend-dot{width:13px;height:13px;border-radius:4px;flex:0 0 auto}
+  .legend-row .l-name{flex:1;color:var(--muted);font-size:14px}
+  .legend-row .l-amt{font-weight:800;font-family:var(--serif);font-size:16px}
+  .bars{display:flex;align-items:flex-end;gap:2.5px;height:96px;margin-top:16px}
+  .bar{flex:1;border-radius:4px 4px 2px 2px;background:var(--bg-soft);min-height:4px}
+  .bar.spent{background:var(--lav)}
+  .bar.today{background:var(--primary);box-shadow:0 0 0 2px color-mix(in srgb,var(--primary) 30%,transparent)}
+  .bars-axis{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:7px;font-weight:700}
+  .paybars{display:flex;align-items:flex-end;gap:3px;height:64px;margin-top:14px}
+  .paybar{flex:1;border-radius:4px 4px 2px 2px;background:var(--chip-everyday);height:38px}
+  .paybar.today{background:var(--primary);height:56px}
+  .paybar.payday{background:var(--gold);height:56px}
+  .wins{display:flex;flex-wrap:wrap;gap:9px;margin-top:6px}
+  .win{display:inline-flex;gap:8px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:9px 14px;font-size:14px;font-weight:650}
+  .win .tick{color:var(--mint);font-weight:900}
+
+  .statusbar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:25;background:var(--primary-dark);color:#e9e2ff;border-radius:999px;padding:11px 20px;font-size:13.5px;font-weight:700;box-shadow:0 16px 35px rgba(60,40,140,.35);display:flex;gap:9px;align-items:center;white-space:nowrap;max-width:calc(100vw - 24px);overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .statusbar::-webkit-scrollbar{display:none}
+  .statusbar>*{flex:0 0 auto}
+  [data-theme="dark"] .statusbar{background:#1e1838;color:#d9d0ff}
+  .statusbar .sep{opacity:.45}
+  .tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:30;background:color-mix(in srgb,var(--card) 96%,transparent);border:1px solid var(--line);box-shadow:0 14px 35px rgba(31,41,55,.18);border-radius:999px;padding:6px;display:none;gap:4px;max-width:calc(100vw - 24px);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{border:0;background:transparent;border-radius:999px;padding:10px 15px;font-weight:800;color:var(--muted);white-space:nowrap;flex:0 0 auto}
+  .tab.active{background:var(--primary);color:#fff}
+  [data-theme="dark"] .tab.active{color:#17102e}
+  .toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-15px);background:var(--primary-dark);color:#fff;padding:12px 18px;border-radius:999px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.25s ease;z-index:60;font-weight:700;max-width:calc(100vw - 30px);text-align:center}
+  [data-theme="dark"] .toast{color:#17102e}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .footer-note{text-align:center;color:var(--muted);font-size:13px;margin-top:24px;line-height:1.5}
+
+  /* Strategy + simulator */
+  .seg{display:inline-flex;flex-wrap:wrap;background:var(--bg-soft);border:1px solid var(--line);border-radius:999px;padding:4px;gap:4px}
+  .seg button{border:0;background:transparent;border-radius:999px;padding:9px 16px;font-weight:800;color:var(--muted)}
+  .seg button.active{background:var(--primary);color:#fff}
+  [data-theme="dark"] .seg button.active{color:#17102e}
+  .sim-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+  .sim-stat{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px}
+  .sim-stat span{display:block;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;font-weight:800;margin-bottom:5px}
+  .sim-stat strong{font-family:var(--serif);font-size:19px}
+  .rank{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:var(--primary-soft);color:var(--primary-dark);display:grid;place-items:center;font-weight:900;font-family:var(--serif)}
+  [data-theme="dark"] .rank{color:var(--primary)}
+  .badge{display:inline-block;background:var(--gold-soft);color:#8a5d06;border-radius:999px;padding:2.5px 9px;font-size:11.5px;font-weight:800;margin-left:7px;vertical-align:middle}
+  [data-theme="dark"] .badge{color:var(--gold)}
+  /* Goals */
+  .goal-top{display:flex;gap:18px;align-items:center}
+  .goal-info{flex:1;min-width:0}
+  .putin{display:flex;gap:8px;margin-top:11px}
+  .putin input{max-width:150px}
+  /* Calendar */
+  .cal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px}
+  .cal-dow{text-align:center;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:4px 0}
+  .cal-day{border:1px solid var(--line);border-radius:12px;min-height:74px;padding:6px;background:var(--card);text-align:left;display:flex;flex-direction:column;gap:3px;color:var(--ink)}
+  .cal-day.dim{opacity:.38}
+  .cal-day.today{border-color:var(--primary);box-shadow:0 0 0 2px color-mix(in srgb,var(--primary) 25%,transparent)}
+  .cal-day.sel{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 35%,transparent)}
+  .cal-num{font-weight:800;font-size:13px}
+  .cal-chip{font-size:10.5px;font-weight:700;border-radius:6px;padding:1.5px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chip-bill{background:var(--chip-everyday)} .chip-debt{background:var(--rose-soft);color:var(--rose)} .chip-pay{background:var(--gold-soft)} .chip-spent{background:var(--bg-soft);color:var(--muted)}
+  /* Milestones */
+  .ms-badge{flex:0 0 auto;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:17px;background:var(--bg-soft);color:var(--muted);border:1.5px solid var(--line)}
+  .ms-badge.got{background:var(--gold-soft);color:#8a5d06;border-color:var(--gold)}
+  [data-theme="dark"] .ms-badge.got{color:var(--gold)}
+  .ms-item.locked{opacity:.55}
+
+  /* Envelopes */
+  .env-bar{height:11px;background:var(--bg-soft);border-radius:999px;overflow:hidden;margin-top:9px}
+  .env-fill{height:100%;border-radius:999px;background:var(--primary)}
+  .env-fill.over{background:var(--rose)}
+
+  @media (max-width:900px){
+    .shell{grid-template-columns:1fr}
+    .rail{display:none}
+    .tabs{display:flex;width:calc(100vw - 20px);justify-content:space-between;border-radius:22px}
+    .tab{padding:12px 8px;font-size:12.5px;flex:1}
+    .statusbar{bottom:86px;font-size:12.5px;padding:9px 15px}
+    main{padding:16px 12px 170px}
+  }
+  @media (max-width:680px){
+    .card{padding:19px}
+    input,select,textarea{font-size:16px}
+    .field-grid,.grid-2{grid-template-columns:1fr}
+    .hero-stats{grid-template-columns:repeat(3,1fr);gap:8px}
+    .stat{padding:10px}.stat strong{font-size:15px}
+    .quick-form{grid-template-columns:1fr}
+    .privacy-pill{display:none}
+    .brand-name{font-size:21px}
+    .note-form{flex-direction:column}
+  }
+  .toast.has-undo{pointer-events:auto}
+  .toast-undo{margin-left:8px;border:0;border-radius:999px;padding:5px 12px;font-weight:800;background:#fff;color:#2b1d6b;cursor:pointer}
+  body.simple-mode [data-adv]{display:none !important}
+  #printArea{display:none}
+  @media print{ body > *:not(#printArea){display:none !important} #printArea{display:block !important;color:#000;font:14px/1.5 system-ui,sans-serif;padding:24px} #printArea h1{font-size:22px;margin:0 0 4px} #printArea h2{font-size:16px;margin:18px 0 6px} #printArea table{width:100%;border-collapse:collapse} #printArea td,#printArea th{border-bottom:1px solid #bbb;padding:5px 6px;text-align:left} #printArea td:last-child,#printArea th:last-child{text-align:right} }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div>
+        <div class="brand-name">Safe<em>Spends</em></div>
+        <small>Budget and Planner</small>
+      </div>
+    </div>
+    <div class="top-actions">
+      <div class="privacy-pill">Private · Offline · No account</div>
+      <button class="pill-btn" id="themeToggle" type="button">☾ Dark</button>
+    </div>
+  </div>
+</header>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<main>
+  <!-- SETUP WIZARD -->
+  <section id="wizard" class="card wizard" aria-labelledby="wizardTitle">
+    <p class="eyebrow">Welcome to SafeSpends</p>
+    <div class="progress" aria-hidden="true"><span id="wizardProgress"></span></div>
+
+    <div class="wizard-step" data-step="0">
+      <h2 id="wizardTitle">One calm number for today.</h2>
+      <p class="serif-note">What can I safely spend — with every bill still covered?</p>
+      <p class="muted">This planner works it out for you. Set up your balance, payday, bills and minimum debt payments once, and each day you get one clear Safe-to-Spend number. Everything stays in this browser, on this device.</p>
+      <div class="notice notice-teal"><strong>No bank login. No account. No tracking.</strong><br>A simple planning tool, designed with ADHD brains in mind.</div>
+      <div class="field" style="margin-top:18px">
+        <label for="wName">What should we call you? <span class="muted">(optional)</span></label>
+        <input id="wName" type="text" autocomplete="name" placeholder="e.g. Alex">
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" data-next type="button">Start setup</button>
+        <button class="btn btn-gold" id="sampleDataBtn" type="button">Try sample data</button>
+      </div>
+      <p class="small muted">Sample data is only for trying the demo. You can erase it any time in Settings.</p>
+    </div>
+
+    <div class="wizard-step hidden" data-step="1">
+      <h2>Your money basics</h2>
+      <p class="muted">Choose the currency and the money you have available right now.</p>
+      <div class="field-grid">
+        <div class="field">
+          <label for="wCurrency">Currency</label>
+          <select id="wCurrency">
+            <option value="USD">US Dollar ($)</option>
+            <option value="GBP">British Pound (£)</option>
+            <option value="EUR">Euro (€)</option>
+            <option value="AUD">Australian Dollar (A$)</option>
+            <option value="CAD">Canadian Dollar (C$)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="wBalance">Current available balance</label>
+          <input id="wBalance" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 850">
+          <span class="help">Use the money you can actually use, not a credit limit.</span>
+        </div>
+        <div class="field full">
+          <label for="wSavings">Savings to set aside this pay period</label>
+          <input id="wSavings" type="number" min="0" step="0.01" inputmode="decimal" value="0">
+          <span class="help">Optional. This amount is protected before Safe-to-Spend is calculated.</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" data-back type="button">Back</button>
+        <button class="btn btn-primary" data-next type="button">Continue</button>
+      </div>
+    </div>
+
+    <div class="wizard-step hidden" data-step="2">
+      <h2>When does money come in?</h2>
+      <p class="muted">Safe-to-Spend only needs to protect you until the next payday.</p>
+      <div class="field-grid">
+        <div class="field">
+          <label for="wFrequency">How do you get paid?</label>
+          <select id="wFrequency">
+            <option value="weekly">Weekly</option>
+            <option value="biweekly" selected>Every 2 weeks</option>
+            <option value="semimonthly">Twice a month</option>
+            <option value="monthly">Monthly</option>
+            <option value="irregular">Irregular / variable income</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="wPayday">Next payday / next expected income</label>
+          <input id="wPayday" type="date">
+        </div>
+        <div class="field full">
+          <label for="wPayAmount" id="payAmountLabel">Usual amount you receive</label>
+          <input id="wPayAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 1600">
+          <span class="help" id="payAmountHelp">For irregular income, enter the lowest amount you can reasonably count on. We build the plan from the safer number.</span>
+        </div>
+      </div>
+      <div class="notice notice-gold" style="margin-top:16px"><strong>Irregular income is welcome here.</strong> You do not need a perfect salary pattern to make a useful plan.</div>
+      <div class="actions">
+        <button class="btn btn-ghost" data-back type="button">Back</button>
+        <button class="btn btn-primary" data-next type="button">Continue</button>
+      </div>
+    </div>
+
+    <div class="wizard-step hidden" data-step="3">
+      <h2>Add your main bills</h2>
+      <p class="muted">Add any bills you know about. Bills due before payday are protected automatically. You can skip this and add them later.</p>
+      <div class="field-grid">
+        <div class="field"><label for="wbName">Bill name</label><input id="wbName" type="text" placeholder="e.g. Internet"></div>
+        <div class="field"><label for="wbAmount">Amount</label><input id="wbAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+        <div class="field"><label for="wbDate">Next due date</label><input id="wbDate" type="date"></div>
+        <div class="field"><label for="wbFreq">Repeats</label><select id="wbFreq"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option><option value="once">One time</option></select></div>
+      </div>
+      <div class="actions"><button class="btn btn-soft" id="wAddBill" type="button">Add bill</button></div>
+      <div id="wizardBills" class="mini-list"></div>
+      <div class="actions">
+        <button class="btn btn-ghost" data-back type="button">Back</button>
+        <button class="btn btn-primary" data-next type="button">Continue</button>
+      </div>
+    </div>
+
+    <div class="wizard-step hidden" data-step="4">
+      <h2>Add minimum debt payments</h2>
+      <p class="muted">Only the minimum payment matters for this first Safe-to-Spend calculation. The fuller debt payoff planner comes in the next slice.</p>
+      <div class="field-grid">
+        <div class="field"><label for="wdName">Debt name</label><input id="wdName" type="text" placeholder="e.g. Credit card"></div>
+        <div class="field"><label for="wdMin">Minimum payment</label><input id="wdMin" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+        <div class="field"><label for="wdBalance">Total still owed <span class="muted">(optional)</span></label><input id="wdBalance" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+        <div class="field"><label for="wdApr">Interest (APR %) <span class="muted">(optional)</span></label><input id="wdApr" type="number" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 19.9"></div>
+        <div class="field"><label for="wdDate">Next due date</label><input id="wdDate" type="date"></div>
+        <div class="field"><label for="wdFreq">Repeats</label><select id="wdFreq"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option><option value="once">One time</option></select></div>
+      </div>
+      <div class="actions"><button class="btn btn-soft" id="wAddDebt" type="button">Add debt payment</button></div>
+      <div id="wizardDebts" class="mini-list"></div>
+      <div class="actions">
+        <button class="btn btn-ghost" data-back type="button">Back</button>
+        <button class="btn btn-primary" data-next type="button">Continue</button>
+      </div>
+    </div>
+
+    <div class="wizard-step hidden" data-step="5">
+      <h2>You’re ready for your first number</h2>
+      <p class="muted">SafeSpends protects bills and minimum debt payments due <strong>before</strong> payday, protects your savings set-aside, and divides what remains across the days left.</p>
+      <div class="notice notice-teal">
+        <strong>The simple maths:</strong><br>
+        Balance − bills before payday − debt minimums before payday − savings set-aside = your Safe-to-Spend pool.
+      </div>
+      <p class="small muted">Payments due exactly on payday are not subtracted in this period, because the new income arrives that day.</p>
+      <div class="actions">
+        <button class="btn btn-ghost" data-back type="button">Back</button>
+        <button class="btn btn-primary" id="finishWizard" type="button">Show my Safe-to-Spend</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <div id="appShell" class="hidden">
+    <div class="shell">
+      <aside class="rail" aria-label="Planner">
+        <div class="rail-card">
+          <p class="eyebrow">Your planner</p>
+          <nav class="rail-nav">
+            <button class="rail-link active" data-view="home" type="button">Today</button>
+            <button class="rail-link" data-view="bills" type="button">Bills</button>
+            <button class="rail-link" data-view="moneyin" data-adv type="button">Money in</button>
+            <button class="rail-link" data-view="debts" data-adv type="button">Debts</button>
+            <button class="rail-link" data-view="goals" type="button">Goals</button>
+            <button class="rail-link" data-view="envelopes" data-adv type="button">Envelopes</button>
+            <button class="rail-link" data-view="milestones" data-adv type="button">Milestones</button>
+            <button class="rail-link" data-view="month" data-adv type="button">Month</button>
+            <button class="rail-link" data-view="settings" type="button">Settings</button>
+          </nav>
+        </div>
+        <div class="rail-card rail-stat">
+          <span>Safe until payday</span>
+          <strong id="railPool">$0</strong>
+          <p class="mini" style="margin:10px 0 0"><span id="railDays">—</span> · next payday <span id="railPayday">—</span></p>
+        </div>
+        <div class="rail-card">
+          <p class="eyebrow">Yours, privately</p>
+          <p class="mini" style="margin:0">Lifetime planner · no account · no subscription. Your numbers are saved on this device only.</p>
+        </div>
+      </aside>
+
+      <div class="content">
+        <section id="paydayBanner" class="card hidden" style="margin-bottom:18px;background:var(--gold-soft)">
+          <p class="eyebrow">Payday check-in</p>
+          <h3>Your payday has arrived</h3>
+          <p class="muted">Confirm what arrived and choose the next payday. Your balance will update and the plan will roll forward.</p>
+          <div class="field-grid">
+            <div class="field"><label for="checkinAmount">Amount received</label><input id="checkinAmount" type="number" min="0" step="0.01" inputmode="decimal"></div>
+            <div class="field"><label for="checkinDate">Next payday / expected income date</label><input id="checkinDate" type="date"></div>
+          </div>
+          <div class="actions"><button id="confirmPayday" class="btn btn-gold" type="button">Confirm payday & roll forward</button></div>
+        </section>
+
+        <section id="view-home" class="view">
+          <!-- Greeting -->
+          <div class="greet">
+            <p class="eyebrow" id="greetEyebrow">Today</p>
+            <div class="greet-row">
+              <h2 id="greetTitle">Good morning</h2>
+              <div class="greet-controls">
+                <button class="focus-toggle" id="focusToggle" type="button" aria-pressed="false"><span class="dot"></span>Focus</button>
+                <button class="btn btn-primary" id="logSpendBtn" type="button">Log a spend</button>
+              </div>
+            </div>
+            <p class="status-line"><strong id="statusTitle">You’re on track</strong> · <span id="statusText">Your known bills before payday are protected.</span></p>
+          </div>
+
+          <!-- One thing -->
+          <div class="onething below-hero">
+            <p class="eyebrow">One thing for now</p>
+            <p id="oneThingText">Nothing is due before payday. The number above is yours to use, gently.</p>
+          </div>
+
+          <!-- Hero -->
+          <div class="card hero-card">
+            <p class="eyebrow" id="heroLabel" style="margin:0">Safe to spend today</p>
+            <div class="hero-number" id="heroPerDay">$0</div>
+            <p class="hero-sub" id="heroSub">Your calm daily guide until payday.</p>
+            <div class="hero-stats">
+              <div class="stat"><span>Safe pool</span><strong id="heroPool">$0</strong></div>
+              <div class="stat"><span>Days left</span><strong id="heroDays">0</strong></div>
+              <div class="stat"><span>Next payday</span><strong id="heroPayday">—</strong></div>
+            </div>
+            <div class="preset-row" id="presetChips"></div>
+            <button class="how-toggle" id="howToggle" type="button">How is this number worked out?</button>
+            <div class="hero-breakdown hidden" id="heroBreakdown">
+              <div class="row"><span>Current balance</span><strong id="bdBalance">$0</strong></div>
+              <div class="row"><span>Bills due before payday</span><strong id="bdBills">− $0</strong></div>
+              <div class="row"><span>Debt minimums before payday</span><strong id="bdDebts">− $0</strong></div>
+              <div class="row"><span>Savings set-aside</span><strong id="bdSavings">− $0</strong></div>
+              <div class="row total"><span>Safe-to-Spend pool</span><strong id="bdPool">$0</strong></div>
+              <p class="small muted" style="margin:10px 0 0">Payments due exactly on payday are counted with the next period, because new money arrives that day. The pool is divided by the days left, so the big number is a per-day guide.</p>
+            </div>
+            <div class="notice notice-teal focus-note hidden" id="focusNote">Focus is on. Everything below is softer, so the number stays in charge.</div>
+          </div>
+
+          <!-- Three small things -->
+          <section class="card below-hero">
+            <p class="eyebrow">Today, gently</p>
+            <h3>Three small things</h3>
+            <div id="thingsList"></div>
+            <p class="things-count" id="thingsCount"></p>
+          </section>
+
+          <!-- Quick add -->
+          <section class="card section hidden" id="backupNudge" style="margin-bottom:18px">
+            <p style="margin:0 0 6px"><strong>Make a spare copy.</strong> <span id="backupNudgeText"></span></p>
+            <div class="actions"><button class="btn btn-gold btn-small" id="nudgeBackup" type="button">Download backup</button><button class="btn btn-ghost btn-small" id="nudgeLater" type="button">Remind me in 3 days</button></div>
+          </section>
+          <section class="card section below-hero" id="quickCard">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">Quick add</p>
+                <h3>Spent something? Log it, then let it go.</h3>
+              </div>
+              <button class="help-btn" type="button" data-help="helpQuick" aria-label="Help: quick add">?</button>
+            </div>
+            <p class="help-panel hidden" id="helpQuick"><strong>Quick when you want it, exact when you need it.</strong> Type the amount, add one word for what it was, and tap Add. Your balance and Safe-to-Spend update at once. Removing a logged spend restores the money.</p>
+            <form id="quickForm" class="quick-form">
+              <div class="field"><label for="quickAmount">Amount</label><input id="quickAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0.00" required></div>
+              <div class="field"><label for="quickNote">What was it? <span class="muted">(optional)</span></label><input id="quickNote" type="text" placeholder="e.g. Groceries"></div>
+              <button class="btn btn-primary" type="submit">Add spend</button>
+            </form>
+            <div class="amt-chips" id="amountChips" aria-label="Quick amounts"></div>
+            <div class="chips" id="categoryChips" aria-label="Spending categories">
+              <button type="button" class="chip active" data-category="Everyday">Everyday</button>
+              <button type="button" class="chip" data-category="Groceries">Groceries</button>
+              <button type="button" class="chip" data-category="Food out">Food out</button>
+              <button type="button" class="chip" data-category="Transport">Transport</button>
+              <button type="button" class="chip" data-category="Fun">Fun</button>
+              <button type="button" class="chip" data-category="Other">Other</button>
+            </div>
+          </section>
+
+          <!-- Logged + notes -->
+          <div class="grid-2 section below-hero">
+            <section class="card">
+              <p class="eyebrow">Recent</p>
+              <h3>Your logged spending</h3>
+              <div id="recentSpends" class="list"></div>
+            </section>
+            <section class="card">
+              <div class="card-head">
+                <div>
+                  <p class="eyebrow">Mind offload</p>
+                  <h3>Out of your head</h3>
+                </div>
+                <button class="help-btn" type="button" data-help="helpNotes" aria-label="Help: notes">?</button>
+              </div>
+              <p class="help-panel hidden" id="helpNotes"><strong>Park it here, so your head doesn’t have to hold it.</strong> Money thoughts, reminders, “don’t forget” items — drop them in and come back later. Notes never change your numbers.</p>
+              <form id="noteForm" class="note-form">
+                <input id="noteText" type="text" placeholder="Type the thought, then let it go…" aria-label="New note">
+                <button class="btn btn-soft" type="submit">Park it</button>
+              </form>
+              <div id="notesList" class="list"></div>
+            </section>
+          </div>
+
+          <!-- Coming up -->
+          <section class="card section below-hero">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">Coming up</p>
+                <h3>Next bills & minimums</h3>
+              </div>
+              <button class="help-btn" type="button" data-help="helpUpcoming" aria-label="Help: coming up">?</button>
+            </div>
+            <p class="help-panel hidden" id="helpUpcoming"><strong>Soonest first.</strong> Items marked “protected in this period” are already set aside inside your Safe-to-Spend number — you do not need to hold them in your head.</p>
+            <div id="upcomingList" class="list"></div>
+          </section>
+
+          <!-- Month so far -->
+          <section class="card section below-hero">
+            <p class="eyebrow">Your month</p>
+            <h3>Where the money stands</h3>
+            <div class="donut-wrap">
+              <svg width="150" height="150" viewBox="0 0 150 150" role="img" aria-label="Money breakdown chart">
+                <circle cx="75" cy="75" r="52" fill="none" stroke="var(--bg-soft)" stroke-width="17"/>
+                <circle id="donutSpent" cx="75" cy="75" r="52" fill="none" stroke="#cf6f74" stroke-width="17" stroke-linecap="round" transform="rotate(-90 75 75)"/>
+                <circle id="donutProt" cx="75" cy="75" r="52" fill="none" stroke="#a98fe8" stroke-width="17" stroke-linecap="round" transform="rotate(-90 75 75)"/>
+                <circle id="donutSafe" cx="75" cy="75" r="52" fill="none" stroke="#4e9c6e" stroke-width="17" stroke-linecap="round" transform="rotate(-90 75 75)"/>
+                <text id="donutCenter" x="75" y="72" text-anchor="middle" font-family="Georgia,serif" font-size="21" font-weight="600" fill="var(--ink)">—</text>
+                <text x="75" y="92" text-anchor="middle" font-size="10.5" fill="var(--muted)">STILL SAFE</text>
+              </svg>
+              <div class="donut-legend">
+                <div class="legend-row"><span class="legend-dot" style="background:#4e9c6e"></span><span class="l-name">Still safe to spend</span><span class="l-amt" id="legendSafe">$0</span></div>
+                <div class="legend-row"><span class="legend-dot" style="background:#a98fe8"></span><span class="l-name">Protected for bills & minimums</span><span class="l-amt" id="legendProt">$0</span></div>
+                <div class="legend-row"><span class="legend-dot" style="background:#cf6f74"></span><span class="l-name">Went out — logged this month</span><span class="l-amt" id="legendSpent">$0</span></div>
+                <p class="small muted" style="margin:2px 0 0" id="monthTotalNote"></p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Every day this month -->
+          <section class="card section below-hero">
+            <p class="eyebrow">Day by day</p>
+            <h3>Every day this month</h3>
+            <div class="bars" id="monthBars"></div>
+            <div class="bars-axis"><span id="monthBarsStart"></span><span id="monthBarsMid"></span><span id="monthBarsEnd"></span></div>
+            <p class="small muted" id="monthBarsNote" style="margin:8px 0 0"></p>
+          </section>
+
+          <!-- Run to payday -->
+          <section class="card section below-hero">
+            <p class="eyebrow">The stretch ahead</p>
+            <h3>The days to payday</h3>
+            <div class="paybars" id="paydayBars"></div>
+            <div class="bars-axis"><span>Today</span><span id="paydayBarsNote"></span></div>
+          </section>
+
+          <!-- Small wins -->
+          <section class="card section below-hero">
+            <p class="eyebrow">Quiet progress</p>
+            <h3>Small wins, kept</h3>
+            <div class="wins" id="winsList"></div>
+          </section>
+        </section>
+
+        <section id="view-bills" class="view hidden">
+          <section class="card" style="margin-bottom:18px">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">Bills</p>
+                <h3 id="billFormTitle">Add a bill</h3>
+              </div>
+              <button class="help-btn" type="button" data-help="helpBills" aria-label="Help: bills">?</button>
+            </div>
+            <p class="help-panel hidden" id="helpBills"><strong>Every bill you owe, in one calm list.</strong> A bill due before your next payday is protected inside Safe-to-Spend automatically. If a date has passed, the planner rolls it to its next due date.</p>
+            <form id="billForm">
+              <input type="hidden" id="billId">
+              <div class="field-grid">
+                <div class="field"><label for="billName">Bill name</label><input id="billName" required type="text" placeholder="e.g. Phone"></div>
+                <div class="field"><label for="billAmount">Amount</label><input id="billAmount" required type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+                <div class="field"><label for="billDate">Next due date</label><input id="billDate" required type="date"></div>
+                <div class="field"><label for="billFreq">Repeats</label><select id="billFreq"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option><option value="once">One time</option></select></div>
+              </div>
+              <div class="actions"><button class="btn btn-primary" type="submit">Save bill</button><button class="btn btn-ghost hidden" id="cancelBillEdit" type="button">Cancel edit</button></div>
+            </form>
+          </section>
+          <section class="card">
+            <h3>Your bills, soonest first</h3>
+            <div id="billsList" class="list"></div>
+          </section>
+        </section>
+
+        <section id="view-moneyin" class="view hidden">
+          <section class="card" style="margin-bottom:18px">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">Money in</p>
+                <h3 id="miNextTitle">Next payday</h3>
+              </div>
+              <button class="help-btn" type="button" data-help="helpMi" aria-label="Help: money in">?</button>
+            </div>
+            <p class="help-panel hidden" id="helpMi"><strong>The calm side of the plan.</strong> This is where your pay lives: when it comes, roughly how much, and what pattern it follows. When a payday actually lands, use the check-in at the top of the page — your balance updates and the plan rolls forward by itself. Irregular income is welcome here; the plan is built from the lowest amount you can count on.</p>
+            <p class="muted" id="miDaysLine" style="margin:0 0 14px"></p>
+            <div class="hero-stats">
+              <div class="stat"><span class="stat-label">Usual amount</span><span class="stat-value" id="miUsual">—</span></div>
+              <div class="stat"><span class="stat-label">Balance right now</span><span class="stat-value" id="miBalanceNow">—</span></div>
+              <div class="stat"><span class="stat-label">Pay pattern</span><span class="stat-value" id="miPatternLabel">—</span></div>
+            </div>
+          </section>
+          <section class="card" style="margin-bottom:18px">
+            <p class="eyebrow">Your pay pattern</p>
+            <h3>Keep it current</h3>
+            <form id="miForm">
+              <div class="field-grid">
+                <div class="field"><label for="miFreq">How often are you paid?</label><select id="miFreq"><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option><option value="semimonthly">Twice a month</option><option value="monthly">Monthly</option><option value="irregular">Irregular / variable income</option></select></div>
+                <div class="field"><label for="miAmount">Usual amount you receive</label><input id="miAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+                <div class="field"><label for="miNext">Next payday</label><input id="miNext" type="date"></div>
+              </div>
+              <p class="small muted" style="margin:0 0 12px">For irregular income, enter the lowest amount you can reasonably count on — the plan is built from the safer number.</p>
+              <div class="actions"><button class="btn btn-primary" type="submit">Save pay details</button></div>
+            </form>
+          </section>
+          <section class="card">
+            <p class="eyebrow">Coming paydays</p>
+            <h3>What is on its way</h3>
+            <div id="miPaydayList" class="list"></div>
+            <p class="small muted" id="miIrregularNote" style="margin:12px 0 0"></p>
+          </section>
+        </section>
+
+        <section id="view-debts" class="view hidden">
+          <section class="card" style="margin-bottom:18px">
+            <p class="eyebrow">Paying it down</p>
+            <h3>Your way out, mapped</h3>
+            <div class="hero-stats" style="margin-top:14px">
+              <div class="stat"><span>Still owed</span><strong id="debtTotalOwed">$0</strong></div>
+              <div class="stat"><span>Minimums each month</span><strong id="debtTotalMin">$0</strong></div>
+              <div class="stat"><span>Extra in the picture</span><strong id="debtExtraStat">$0</strong></div>
+            </div>
+          </section>
+
+          <section class="card" style="margin-bottom:18px">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">The plan</p>
+                <h3>One debt at a time</h3>
+              </div>
+              <button class="help-btn" type="button" data-help="helpPlan" aria-label="Help: payoff plan">?</button>
+            </div>
+            <p class="help-panel hidden" id="helpPlan"><strong>Two honest ways to aim extra money.</strong> Snowball clears the smallest balance first — quick wins, real momentum. Avalanche clears the highest interest first — the least total interest. Neither is “correct”; the best plan is the one you will stay with. Your minimums stay protected inside Safe-to-Spend either way.</p>
+            <div class="seg" role="group" aria-label="Payoff strategy">
+              <button type="button" data-strategy="snowball">Snowball · smallest first</button>
+              <button type="button" data-strategy="avalanche">Avalanche · highest interest first</button>
+            </div>
+            <div class="field" style="margin-top:16px;max-width:300px">
+              <label for="extraInput">Extra you could add each month</label>
+              <input id="extraInput" type="number" min="0" step="1" inputmode="decimal" value="50">
+              <span class="help">Change it and watch the date below move. This is a picture, not a promise — interest is estimated from the APRs you add to each debt.</span>
+            </div>
+            <div id="simResults" style="margin-top:16px"></div>
+          </section>
+
+          <section class="card" style="margin-bottom:18px">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">Debt minimums</p>
+                <h3 id="debtFormTitle">Add a debt</h3>
+              </div>
+              <button class="help-btn" type="button" data-help="helpDebts" aria-label="Help: debts">?</button>
+            </div>
+            <p class="help-panel hidden" id="helpDebts"><strong>Minimums keep you safe; a plan makes you free.</strong> Each minimum payment is protected inside Safe-to-Spend. Add what is still owed and the interest rate (APR), and the plan above can order your debts and estimate the debt-free date.</p>
+            <form id="debtForm">
+              <input type="hidden" id="debtId">
+              <div class="field-grid">
+                <div class="field"><label for="debtName">Debt name</label><input id="debtName" required type="text" placeholder="e.g. Credit card"></div>
+                <div class="field"><label for="debtMin">Minimum payment</label><input id="debtMin" required type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+                <div class="field"><label for="debtBalance">Total still owed <span class="muted">(optional)</span></label><input id="debtBalance" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+                <div class="field"><label for="debtApr">Interest (APR %) <span class="muted">(optional)</span></label><input id="debtApr" type="number" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 19.9"></div>
+                <div class="field"><label for="debtDate">Next due date</label><input id="debtDate" required type="date"></div>
+                <div class="field"><label for="debtFreq">Repeats</label><select id="debtFreq"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option><option value="once">One time</option></select></div>
+              </div>
+              <div class="actions"><button class="btn btn-primary" type="submit">Save debt</button><button class="btn btn-ghost hidden" id="cancelDebtEdit" type="button">Cancel edit</button></div>
+            </form>
+          </section>
+          <section class="card">
+            <h3>Your payoff order</h3>
+            <p class="muted small" style="margin-top:0">In the order your strategy tackles them. Extra money goes to number 1 first.</p>
+            <div id="debtsList" class="list"></div>
+          </section>
+        </section>
+
+        <section id="view-goals" class="view hidden">
+          <section class="card" style="margin-bottom:18px">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">Goals</p>
+                <h3 id="goalFormTitle">Add a goal</h3>
+              </div>
+              <button class="help-btn" type="button" data-help="helpGoals" aria-label="Help: goals">?</button>
+            </div>
+            <p class="help-panel hidden" id="helpGoals"><strong>Saving, in the open.</strong> Give the goal a name and a target. “Put in” moves money out of your planner balance into the goal, so your Safe-to-Spend stays honest. If the money lives somewhere your planner balance doesn’t include, untick the box — putting in then won’t touch your balance.</p>
+            <form id="goalForm">
+              <input type="hidden" id="goalId">
+              <div class="field-grid">
+                <div class="field"><label for="goalName">Goal name</label><input id="goalName" required type="text" placeholder="e.g. A calmer cushion"></div>
+                <div class="field"><label for="goalTarget">Target amount</label><input id="goalTarget" required type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+                <div class="field"><label for="goalSaved">Already saved</label><input id="goalSaved" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+                <div class="field"><label for="goalMonthly">Planned per month <span class="muted">(optional)</span></label><input id="goalMonthly" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+                <div class="field full"><label style="display:flex;gap:9px;align-items:center;font-weight:600"><input id="goalFromBalance" type="checkbox" checked style="width:auto"> “Put in” comes out of my planner balance</label></div>
+              </div>
+              <div class="actions"><button class="btn btn-primary" type="submit">Save goal</button><button class="btn btn-ghost hidden" id="cancelGoalEdit" type="button">Cancel edit</button></div>
+            </form>
+          </section>
+          <section class="card">
+            <p class="eyebrow">What you are saving for</p>
+            <h3>Your goals</h3>
+            <p class="muted" id="goalsSummary" style="margin-top:0"></p>
+            <div id="goalsList" class="list"></div>
+          </section>
+        </section>
+
+        <section id="view-month" class="view hidden">
+          <section class="card" style="margin-bottom:18px">
+            <div class="cal-head">
+              <div>
+                <p class="eyebrow">Planner</p>
+                <h3 id="calTitle">Month</h3>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-ghost btn-small" id="calPrev" type="button">← Prev</button>
+                <button class="btn btn-ghost btn-small" id="calNext" type="button">Next →</button>
+              </div>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+            <div id="calReadout" style="margin-top:14px"></div>
+            <p class="small muted" style="margin:12px 0 0">Gold is payday, lavender is a bill, rose is a debt minimum, grey is money you logged. Nothing here is a surprise — that is the point.</p>
+          </section>
+        </section>
+
+        <section id="view-envelopes" class="view hidden">
+          <section class="card">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">Envelopes</p>
+                <h3 id="envFormTitle">Add an envelope</h3>
+              </div>
+              <button class="help-btn" type="button" data-help="helpEnv" aria-label="Help: envelopes">?</button>
+            </div>
+            <p class="help-panel hidden" id="helpEnv"><strong>Caps, not cages.</strong> An envelope is a monthly line to notice for one kind of spending. Going over is information, not failure — and envelopes never change your Safe-to-Spend number; the money was already counted once.</p>
+            <form id="envForm">
+              <input type="hidden" id="envId">
+              <div class="field-grid">
+                <div class="field"><label for="envName">Kind of spending</label><input id="envName" required type="text" list="catList" placeholder="e.g. Groceries"><datalist id="catList"><option value="Everyday"></option><option value="Groceries"></option><option value="Food out"></option><option value="Transport"></option><option value="Fun"></option><option value="Other"></option></datalist></div>
+                <div class="field"><label for="envCap">Monthly cap</label><input id="envCap" required type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+              </div>
+              <div class="actions"><button class="btn btn-primary" type="submit">Save envelope</button><button class="btn btn-ghost hidden" id="cancelEnvEdit" type="button">Cancel edit</button></div>
+            </form>
+            <div id="envList" class="list" style="margin-top:16px"></div>
+          </section>
+        </section>
+
+        <section id="view-milestones" class="view hidden">
+          <section class="card" style="margin-bottom:18px">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">Milestones</p>
+                <h3>Proof it is working</h3>
+              </div>
+              <button class="help-btn" type="button" data-help="helpMs" aria-label="Help: milestones">?</button>
+            </div>
+            <p class="help-panel hidden" id="helpMs"><strong>Kept, not chased.</strong> These are not points, and there is nothing to win. They are a record of what you have already done — kept for the days when it feels like nothing is working. Every one of them comes from your real numbers, never from a timer or a trick.</p>
+            <p class="muted" id="msSummary" style="margin:0"></p>
+            <div class="env-bar" style="margin-top:14px"><div class="env-fill" id="msBar" style="width:0%"></div></div>
+          </section>
+          <section class="card">
+            <div id="msList" class="list"></div>
+          </section>
+        </section>
+
+        <section id="view-settings" class="view hidden">
+          <section class="card" style="margin-bottom:18px">
+            <p class="eyebrow">How much to show</p>
+            <h3>Simple or everything</h3>
+            <p class="muted">Simple keeps Today, Bills, Goals and Settings close. Everything adds Money in, Debts, Month, Envelopes and Milestones. Nothing is deleted when you switch.</p>
+            <div class="seg" role="group" aria-label="How much to show"><button type="button" data-viewmode="simple">Simple</button><button type="button" data-viewmode="all">Everything</button></div>
+          </section>
+          <section class="card" style="margin-bottom:18px">
+            <p class="eyebrow">Quick log</p>
+            <h3>Your quick buttons</h3>
+            <p class="muted">The one-tap buttons on Today. Add the things you buy most.</p>
+            <div id="presetEditList" class="list"></div>
+            <form id="presetForm" style="margin-top:12px">
+              <div class="field-grid">
+                <div class="field"><label for="presetName">Name</label><input id="presetName" type="text" maxlength="24" placeholder="e.g. Chai"></div>
+                <div class="field"><label for="presetAmount">Amount</label><input id="presetAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+                <div class="field full"><label for="presetCat">Kind of spending <span class="muted">(optional)</span></label><input id="presetCat" type="text" list="catList" placeholder="Everyday"></div>
+              </div>
+              <div class="actions"><button class="btn btn-primary" type="submit">Add button</button><button class="btn btn-ghost" id="presetReset" type="button">Back to the starter set</button></div>
+            </form>
+          </section>
+          <section class="card" style="margin-bottom:18px">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">Settings</p>
+                <h3>How your planner works</h3>
+              </div>
+              <button class="help-btn" type="button" data-help="helpSettings" aria-label="Help: settings">?</button>
+            </div>
+            <p class="help-panel hidden" id="helpSettings"><strong>Change anything, any time.</strong> Nothing here deletes your bills or spending. Use the Dark/Light button at the top to switch themes — both keep the same colour meanings.</p>
+            <form id="settingsForm">
+              <div class="field-grid">
+                <div class="field"><label for="sName">Name</label><input id="sName" type="text"></div>
+                <div class="field"><label for="sCurrency">Currency</label><select id="sCurrency"><option value="USD">US Dollar ($)</option><option value="GBP">British Pound (£)</option><option value="EUR">Euro (€)</option><option value="AUD">Australian Dollar (A$)</option><option value="CAD">Canadian Dollar (C$)</option></select></div>
+                <div class="field"><label for="sBalance">Current available balance</label><input id="sBalance" required type="number" step="0.01" inputmode="decimal"></div>
+                <div class="field"><label for="sSavings">Savings set-aside this period</label><input id="sSavings" required type="number" min="0" step="0.01" inputmode="decimal"></div>
+                <div class="field"><label for="sFrequency">Pay pattern</label><select id="sFrequency"><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option><option value="semimonthly">Twice a month</option><option value="monthly">Monthly</option><option value="irregular">Irregular / variable income</option></select></div>
+                <div class="field"><label for="sPayday">Next payday / expected income</label><input id="sPayday" required type="date"></div>
+                <div class="field"><label for="sPayAmount">Usual / safely expected pay amount</label><input id="sPayAmount" required type="number" min="0" step="0.01" inputmode="decimal"></div>
+                <div class="field"><label for="sHeroLabel">Words above the big number</label><select id="sHeroLabel"><option>Safe to spend today</option><option>Left to spend today</option><option>Remaining to spend</option></select><span class="help">Wording only — the maths stays the same.</span></div>
+                <div class="field"><label for="sTheme">Theme</label><select id="sTheme"><option value="light">Light</option><option value="dark">Dark</option></select><span class="help">You can also switch any time with the button at the top of the screen.</span></div>
+              </div>
+              <div class="actions"><button class="btn btn-primary" type="submit">Save settings</button></div>
+            </form>
+          </section>
+
+          <section class="card" style="margin-bottom:18px">
+            <p class="eyebrow">Your data</p>
+            <h3>Backup & restore</h3>
+            <p class="muted">Your planner saves on this device, in the browser’s own storage. A browser can clear that storage — Safari does it after about a week of not opening the planner — so a backup file is the copy that survives. Download one now and then, and keep it somewhere safe.</p>
+            <p class="small muted" id="lastBackupLine">Your first backup has not been downloaded yet.</p>
+            <div class="actions">
+              <button class="btn btn-gold" id="exportBtn" type="button">Download backup file</button>
+              <button class="btn btn-soft" id="csvBtn" type="button">Export spending (CSV)</button>
+              <button class="btn btn-soft" id="printBtn" type="button">Print this month</button>
+              <label class="btn btn-ghost" for="importFile" style="margin:0">Restore a backup</label>
+              <input id="importFile" type="file" accept="application/json,.json" class="hidden">
+            </div>
+          </section>
+
+          <section class="card">
+            <p class="eyebrow">Demo controls</p>
+            <h3>Sample data & reset</h3>
+            <p class="muted">Use sample data to see the planner working immediately. Reset removes everything saved by this demo in this browser.</p>
+            <div class="actions">
+              <button class="btn btn-gold" id="sampleDataBtn2" type="button">Load sample data</button>
+              <button class="btn btn-danger" id="resetBtn" type="button">Erase everything & restart setup</button>
+            </div>
+            <div class="notice notice-teal" style="margin-top:16px"><strong>Privacy by design:</strong> this file sends your numbers nowhere. Data lives only in this browser’s storage, on this device.</div>
+          </section>
+        </section>
+
+        <p class="footer-note">SafeSpends is a budgeting tool, not financial advice. It is designed with ADHD brains in mind; it does not diagnose or treat ADHD.</p>
+      </div>
+    </div>
+
+    <div class="statusbar" id="statusBar"><span id="sbMonth">—</span><span class="sep">·</span><span id="sbDays">—</span><span class="sep">·</span><span id="sbPool">—</span><span class="sep">·</span><span>saved on this device</span></div>
+  </div>
+</main>
+
+<nav id="bottomNav" class="tabs hidden" aria-label="Main">
+  <button class="tab active" data-view="home" type="button">Today</button>
+  <button class="tab" data-view="bills" type="button">Bills</button>
+  <button class="tab" data-view="moneyin" data-adv type="button">Money in</button>
+  <button class="tab" data-view="debts" data-adv type="button">Debts</button>
+  <button class="tab" data-view="goals" type="button">Goals</button>
+  <button class="tab" data-view="envelopes" data-adv type="button">Envelopes</button>
+  <button class="tab" data-view="milestones" data-adv type="button">Milestones</button>
+  <button class="tab" data-view="month" data-adv type="button">Month</button>
+  <button class="tab" data-view="settings" type="button">Settings</button>
+</nav>
+
+<script>
+'use strict';
+const STORAGE_KEY = 'safeSpendsDemoSlice1.v1';
+const DAY_MS = 24 * 60 * 60 * 1000;
+const SYMBOLS = {USD:'$', GBP:'£', EUR:'€', AUD:'A$', CAD:'C$'};
+const PRESETS = [
+  {name:'Coffee', amount:5, category:'Food out'},
+  {name:'Snack', amount:8, category:'Food out'},
+  {name:'Ride', amount:3, category:'Transport'},
+  {name:'Little treat', amount:12, category:'Fun'}
+];
+
+function startOfDay(date){ const d = new Date(date); d.setHours(0,0,0,0); return d; }
+function parseDate(value){
+  if(!value) return null;
+  const parts = String(value).split('-').map(Number);
+  if(parts.length !== 3 || parts.some(Number.isNaN)) return null;
+  return new Date(parts[0], parts[1]-1, parts[2]);
+}
+function toISODate(date){
+  const d = startOfDay(date);
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function addDays(date, days){ const d = startOfDay(date); d.setDate(d.getDate()+days); return d; }
+function daysInMonth(year, monthIndex){ return new Date(year, monthIndex+1, 0).getDate(); }
+function dateFromParts(year, monthIndex, wantedDay){
+  const normalized = new Date(year, monthIndex, 1);
+  const y = normalized.getFullYear(); const m = normalized.getMonth();
+  return new Date(y, m, Math.min(wantedDay, daysInMonth(y,m)));
+}
+function addMonthsYMD(date, months){
+  return dateFromParts(date.getFullYear(), date.getMonth()+months, date.getDate());
+}
+function diffDays(a,b){ return Math.round((startOfDay(b)-startOfDay(a))/DAY_MS); }
+function round2(n){ return Math.round((Number(n)||0)*100)/100; }
+function money(amount, currency){
+  try{
+    return new Intl.NumberFormat('en-US',{style:'currency',currency:currency||'USD'}).format(Number(amount)||0);
+  }catch(e){
+    return '$' + (Number(amount)||0).toFixed(2);
+  }
+}
+function formatDate(value){
+  const d = typeof value === 'string' ? parseDate(value) : value;
+  if(!d) return '—';
+  return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+function nextOccurrence(item, fromDate){
+  const base = parseDate(item.dueDate);
+  if(!base) return null;
+  const from = startOfDay(fromDate);
+  const freq = item.frequency || 'monthly';
+  if(freq === 'once') return base >= from ? base : null;
+  if(freq === 'weekly' || freq === 'biweekly'){
+    const step = freq === 'weekly' ? 7 : 14;
+    if(base >= from) return base;
+    const elapsed = diffDays(base, from);
+    const jumps = Math.ceil(elapsed/step);
+    return addDays(base, jumps*step);
+  }
+  const stepMonths = freq === 'quarterly' ? 3 : freq === 'yearly' ? 12 : 1;
+  if(base >= from) return base;
+  const monthDiff = (from.getFullYear()-base.getFullYear())*12 + (from.getMonth()-base.getMonth());
+  let steps = Math.floor(monthDiff/stepMonths)*stepMonths;
+  let candidate = dateFromParts(base.getFullYear(), base.getMonth()+steps, base.getDate());
+  while(candidate < from){
+    steps += stepMonths;
+    candidate = dateFromParts(base.getFullYear(), base.getMonth()+steps, base.getDate());
+  }
+  return candidate;
+}
+
+function nextUnpaidOccurrence(item, fromDate){
+  let d = nextOccurrence(item, fromDate), guard = 0;
+  const paid = item.paidDates || [];
+  while(d && paid.includes(toISODate(d)) && guard++ < 24) d = nextOccurrence(item, addDays(d,1));
+  return d;
+}
+function contributionFor(item, amountField, today, payday){
+  // Every unpaid occurrence before payday is protected, not just the next one:
+  // a weekly bill inside a monthly pay period is due several times, and each
+  // of those dates needs its money set aside.
+  const out = [];
+  const amount = Number(item[amountField])||0;
+  let d = nextUnpaidOccurrence(item, today);
+  let guard = 0;
+  while(d && d >= startOfDay(today) && d < startOfDay(payday) && guard++ < 100){
+    out.push({ item, date: d, amount });
+    if(item.frequency === 'once') break;
+    d = nextUnpaidOccurrence(item, addDays(d, 1));
+  }
+  return out;
+}
+
+function calculateSafeToSpend(state, todayInput){
+  const today = startOfDay(todayInput || new Date());
+  const payday = parseDate(state.nextPayday) || today;
+  const billContribs = (state.bills||[]).flatMap(item => contributionFor(item,'amount',today,payday));
+  const debtContribs = (state.debts||[]).flatMap(item => contributionFor(item,'minPayment',today,payday));
+  const billTotal = round2(billContribs.reduce((sum,x)=>sum+x.amount,0));
+  const debtTotal = round2(debtContribs.reduce((sum,x)=>sum+x.amount,0));
+  const balance = round2(state.balance);
+  const savings = round2(state.savingsSetAside);
+  const rawPool = round2(balance - billTotal - debtTotal - savings);
+  const pool = Math.max(0, rawPool);
+  const rawDays = diffDays(today, payday);
+  const daysLeft = Math.max(0, rawDays);
+  const divisor = Math.max(1, rawDays);
+  const perDay = round2(pool/divisor);
+  const upcoming = [
+    ...billContribs.map(x=>({...x,type:'Bill'})),
+    ...debtContribs.map(x=>({...x,type:'Debt minimum'}))
+  ].sort((a,b)=>a.date-b.date || a.item.name.localeCompare(b.item.name));
+  const future = [
+    ...(state.bills||[]).map(item=>{ const d=nextUnpaidOccurrence(item,today); return d?{item,date:d,amount:Number(item.amount)||0,type:'Bill'}:null; }),
+    ...(state.debts||[]).map(item=>{ const d=nextOccurrence(item,today); return d?{item,date:d,amount:Number(item.minPayment)||0,type:'Debt minimum'}:null; })
+  ].filter(Boolean).sort((a,b)=>a.date-b.date || a.item.name.localeCompare(b.item.name));
+  return { today, payday, billContribs, debtContribs, billTotal, debtTotal, balance, savings, rawPool, pool, daysLeft, perDay, upcoming, future };
+}
+
+function suggestedNextPayday(currentPayday, frequency){
+  const d = parseDate(currentPayday) || new Date();
+  if(frequency === 'weekly') return addDays(d,7);
+  if(frequency === 'biweekly') return addDays(d,14);
+  if(frequency === 'monthly') return addMonthsYMD(d,1);
+  if(frequency === 'semimonthly'){
+    if(d.getDate() < 15) return dateFromParts(d.getFullYear(), d.getMonth(), 15);
+    if(d.getDate() === 15) return dateFromParts(d.getFullYear(), d.getMonth(), daysInMonth(d.getFullYear(), d.getMonth()));
+    return dateFromParts(d.getFullYear(), d.getMonth()+1, 15);
+  }
+  return addDays(d,14);
+}
+
+const defaultState = () => ({
+  setupComplete:false,
+  name:'',
+  currency:'USD',
+  balance:0,
+  savingsSetAside:0,
+  payFrequency:'biweekly',
+  nextPayday:toISODate(addDays(new Date(),14)),
+  payAmount:0,
+  bills:[],
+  debts:[],
+  spends:[],
+  notes:[],
+  goals:[],
+  envelopes:[],
+  debtStrategy:'snowball',
+  simExtra:50,
+  lastBackupAt:0,
+  viewMode:'all',
+  presets:null,
+  backupSnoozeUntil:0,
+  checklist:{date:'',done:[]},
+  theme:'light',
+  heroLabel:'Safe to spend today',
+  focusMode:false
+});
+
+let state = loadState();
+let wizardStep = 0;
+let wizardBills = [];
+let wizardDebts = [];
+let selectedCategory = 'Everyday';
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    return {...defaultState(), ...parsed, bills:parsed.bills||[], debts:parsed.debts||[], spends:parsed.spends||[], notes:parsed.notes||[], goals:parsed.goals||[], envelopes:parsed.envelopes||[], checklist:parsed.checklist||{date:'',done:[]}};
+  }catch(e){ return defaultState(); }
+}
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch(e){ /* storage blocked (private mode / some webviews): the app keeps working for this session */ }
+}
+
+function $(id){ return document.getElementById(id); }
+function showToast(message){
+  const toast = $('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(()=>toast.classList.remove('show'), 2600);
+}
+function escapeHtml(text){
+  return String(text ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+}
+function frequencyLabel(freq){
+  return ({once:'One time',weekly:'Weekly',biweekly:'Every 2 weeks',monthly:'Monthly',quarterly:'Quarterly',yearly:'Yearly',semimonthly:'Twice a month',irregular:'Irregular'})[freq] || freq;
+}
+function applyTheme(){
+  const t = state.theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', t);
+  if(document.body) document.body.setAttribute('data-theme', t);
+  const btn = $('themeToggle');
+  if(btn) btn.textContent = t === 'dark' ? '☀ Light' : '☾ Dark';
+}
+
+function setDefaultDates(){
+  const today = toISODate(new Date());
+  ['wbDate','wdDate','billDate','debtDate'].forEach(id=>{ if($(id) && !$(id).value) $(id).value = today; });
+  if($('wPayday') && !$('wPayday').value) $('wPayday').value = state.nextPayday;
+}
+function syncWizardFromState(){
+  $('wName').value = state.name || '';
+  $('wCurrency').value = state.currency || 'USD';
+  $('wBalance').value = state.balance || '';
+  $('wSavings').value = state.savingsSetAside || 0;
+  $('wFrequency').value = state.payFrequency || 'biweekly';
+  $('wPayday').value = state.nextPayday || toISODate(addDays(new Date(),14));
+  $('wPayAmount').value = state.payAmount || '';
+  wizardBills = [...(state.bills||[])];
+  wizardDebts = [...(state.debts||[])];
+  renderWizardTempLists();
+}
+function showWizardStep(step){
+  wizardStep = Math.max(0, Math.min(5, step));
+  document.querySelectorAll('.wizard-step').forEach(el=>{
+    el.classList.toggle('hidden', Number(el.dataset.step) !== wizardStep);
+  });
+  $('wizardProgress').style.width = ((wizardStep+1)/6*100)+'%';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function validateWizardStep(){
+  if(wizardStep === 1){
+    const balance = Number($('wBalance').value);
+    const savings = Number($('wSavings').value || 0);
+    if($('wBalance').value === '' || Number.isNaN(balance) || balance < 0){ showToast('Please enter your current balance.'); $('wBalance').focus(); return false; }
+    if(Number.isNaN(savings) || savings < 0){ showToast('Savings set-aside cannot be negative.'); $('wSavings').focus(); return false; }
+  }
+  if(wizardStep === 2){
+    const amount = Number($('wPayAmount').value);
+    if(!$('wPayday').value){ showToast('Please choose your next payday.'); $('wPayday').focus(); return false; }
+    if($('wPayAmount').value === '' || Number.isNaN(amount) || amount < 0){ showToast('Please enter the amount you usually receive.'); $('wPayAmount').focus(); return false; }
+  }
+  return true;
+}
+function collectWizard(){
+  state.name = $('wName').value.trim();
+  state.currency = $('wCurrency').value;
+  state.balance = round2($('wBalance').value);
+  state.savingsSetAside = round2($('wSavings').value || 0);
+  state.payFrequency = $('wFrequency').value;
+  state.nextPayday = $('wPayday').value;
+  state.payAmount = round2($('wPayAmount').value);
+  state.bills = [...wizardBills];
+  state.debts = [...wizardDebts];
+}
+function renderWizardTempLists(){
+  const billWrap = $('wizardBills');
+  billWrap.innerHTML = wizardBills.length ? wizardBills.map((b,i)=>`
+    <div class="mini-item"><div><strong>${escapeHtml(b.name)}</strong><br><span class="small muted">${money(b.amount, $('wCurrency').value)} · due ${formatDate(b.dueDate)} · ${frequencyLabel(b.frequency)}</span></div><button class="btn btn-ghost btn-small" type="button" data-remove-wbill="${i}">Remove</button></div>`).join('') : '<div class="empty">No bills added yet. Skipping is fine.</div>';
+  const debtWrap = $('wizardDebts');
+  debtWrap.innerHTML = wizardDebts.length ? wizardDebts.map((d,i)=>`
+    <div class="mini-item"><div><strong>${escapeHtml(d.name)}</strong><br><span class="small muted">Minimum ${money(d.minPayment, $('wCurrency').value)} · due ${formatDate(d.dueDate)} · ${frequencyLabel(d.frequency)}</span></div><button class="btn btn-ghost btn-small" type="button" data-remove-wdebt="${i}">Remove</button></div>`).join('') : '<div class="empty">No debt payments added yet. Skipping is fine.</div>';
+}
+
+function sampleState(){
+  const today = new Date();
+  const s = defaultState();
+  s.setupComplete = true;
+  s.name = 'Alex';
+  s.currency = 'USD';
+  s.balance = 1284.60;
+  s.savingsSetAside = 75;
+  s.payFrequency = 'biweekly';
+  s.nextPayday = toISODate(addDays(today,9));
+  s.payAmount = 1640;
+  s.theme = state.theme || 'light';
+  s.heroLabel = state.heroLabel || 'Safe to spend today';
+  s.bills = [
+    {id:uid(),name:'Internet',amount:64.99,dueDate:toISODate(addDays(today,3)),frequency:'monthly'},
+    {id:uid(),name:'Phone',amount:42.00,dueDate:toISODate(addDays(today,6)),frequency:'monthly'},
+    {id:uid(),name:'Electric bill',amount:91.20,dueDate:toISODate(addDays(today,12)),frequency:'monthly'}
+  ];
+  s.debts = [
+    {id:uid(),name:'Bright Card',balance:1240,minPayment:45,apr:19.9,dueDate:toISODate(addDays(today,4)),frequency:'monthly'},
+    {id:uid(),name:'Personal loan',balance:3800,minPayment:118,apr:9.5,dueDate:toISODate(addDays(today,11)),frequency:'monthly'}
+  ];
+  s.goals = [
+    {id:uid(),name:'A calmer cushion',target:1000,saved:350,monthly:75,fromBalance:true},
+    {id:uid(),name:'New headphones',target:180,saved:60,monthly:30,fromBalance:true}
+  ];
+  s.envelopes = [
+    {id:uid(),name:'Groceries',cap:400},
+    {id:uid(),name:'Food out',cap:120},
+    {id:uid(),name:'Fun',cap:80}
+  ];
+  const mk = (daysAgo, hour, amount, note, category) => ({id:uid(),amount,note,category,createdAt:addDays(today,-daysAgo).setHours(hour,15,0,0)});
+  s.spends = [
+    mk(0,9,6.50,'Coffee','Food out'),
+    mk(1,17,36.20,'Groceries','Groceries'),
+    mk(2,8,18.00,'Bus pass','Transport'),
+    mk(3,13,12.75,'Lunch out','Food out'),
+    mk(5,11,9.40,'Pharmacy','Other'),
+    mk(7,16,7.25,'Snacks','Groceries'),
+    mk(9,19,14.00,'A good book','Fun'),
+    mk(12,10,41.60,'Groceries','Groceries')
+  ];
+  s.notes = [
+    {id:uid(),text:'Ask Sam about Friday’s invoice',createdAt:addDays(today,-1).setHours(9,0,0,0)},
+    {id:uid(),text:'Renew the library card',createdAt:addDays(today,0).setHours(8,30,0,0)}
+  ];
+  s.checklist = {date:toISODate(today),done:[]};
+  return s;
+}
+function loadSampleData(){
+  state = sampleState();
+  saveState();
+  applyTheme();
+  showApp();
+  renderAll();
+  showToast('Sample data loaded. Try the small things, the charts and Quick Add.');
+}
+
+function showApp(){
+  $('wizard').classList.add('hidden');
+  $('appShell').classList.remove('hidden');
+  $('bottomNav').classList.remove('hidden');
+}
+function showWizard(){
+  $('appShell').classList.add('hidden');
+  $('bottomNav').classList.add('hidden');
+  $('wizard').classList.remove('hidden');
+  syncWizardFromState();
+  showWizardStep(0);
+}
+
+// ---- extras: presets, backup nudge, simple mode, bill paid, CSV, print ----
+function getPresets(){ return Array.isArray(state.presets) ? state.presets : PRESETS; }
+function renderPresetEditor(){
+  const el = $('presetEditList'); if(!el) return;
+  const sym = SYMBOLS[state.currency] || '$';
+  const list = getPresets();
+  el.innerHTML = list.length ? list.map((p,i)=>`<div class="item"><div class="item-main"><div class="item-title">${escapeHtml(p.name)}</div><div class="item-meta">${escapeHtml(p.category||'Everyday')}</div><div class="item-actions"><button class="btn btn-danger btn-small" type="button" data-del-preset="${i}">Remove</button></div></div><div class="item-amount">${sym}${p.amount}</div></div>`).join('') : '<div class="empty">No quick buttons. Add one below.</div>';
+}
+function renderBackupNudge(){
+  const el = $('backupNudge'); if(!el) return;
+  const now = Date.now(), last = Number(state.lastBackupAt)||0, day = 864e5;
+  const hasData = (state.spends||[]).length >= 3 || (last > 0);
+  const stale = last > 0 ? (now - last) > 7*day : (state.spends||[]).length >= 3;
+  const show = !!state.setupComplete && hasData && stale && now > (Number(state.backupSnoozeUntil)||0);
+  el.classList.toggle('hidden', !show);
+  if(show) $('backupNudgeText').textContent = last > 0
+    ? `Your last backup was ${Math.floor((now-last)/day)} days ago. Browsers can clear saved data, and a backup file is the copy that survives.`
+    : 'Your numbers live only in this browser. A backup file is the copy that survives if the browser clears its storage.';
+}
+function applyViewMode(){
+  const simple = state.viewMode === 'simple';
+  document.body.classList.toggle('simple-mode', simple);
+  document.querySelectorAll('[data-viewmode]').forEach(b=>b.classList.toggle('active', b.dataset.viewmode === (simple ? 'simple' : 'all')));
+  if(simple){
+    const cur = document.querySelector('.view:not(.hidden)');
+    if(cur && ['moneyin','debts','month','envelopes','milestones'].includes(cur.id.replace('view-',''))) switchView('home');
+  }
+}
+function csvCell(v){
+  let t = String(v == null ? '' : v);
+  if(/^[=+\-@\t\r]/.test(t)) t = "'" + t;
+  return /[",\n\r]/.test(t) ? '"' + t.replace(/"/g,'""') + '"' : t;
+}
+function buildSpendingCsv(){
+  const rows = [['Date','Note','Category','Amount']];
+  [...(state.spends||[])].sort((a,b)=>a.createdAt-b.createdAt).forEach(x=>rows.push([toISODate(new Date(x.createdAt)), x.note, x.category||'Everyday', Number(x.amount).toFixed(2)]));
+  return '\ufeff' + rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
+}
+function buildPrintSummary(){
+  const cur = state.currency, now = new Date(), calc = calculateSafeToSpend(state, now);
+  const mSpends = (state.spends||[]).filter(x=>{ const d=new Date(x.createdAt); return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth(); });
+  const total = round2(mSpends.reduce((a,x)=>a+x.amount,0));
+  const byCat = {}; mSpends.forEach(x=>{ const c = x.category||'Everyday'; byCat[c] = round2((byCat[c]||0) + x.amount); });
+  const row = (a,b)=>`<tr><td>${escapeHtml(a)}</td><td>${escapeHtml(b)}</td></tr>`;
+  return `<h1>${escapeHtml(now.toLocaleDateString('en-US',{month:'long',year:'numeric'}))} summary</h1>
+  <p>Balance ${money(state.balance,cur)} · Safe to spend until payday ${money(calc.pool,cur)} · Next payday ${state.nextPayday ? formatDate(parseDate(state.nextPayday)) : 'not set'}</p>
+  <h2>Spent this month: ${money(total,cur)}</h2><table>${Object.keys(byCat).length ? Object.keys(byCat).map(c=>row(c, money(byCat[c],cur))).join('') : row('Nothing logged yet','')}</table>
+  <h2>Bills</h2><table>${(state.bills||[]).length ? state.bills.map(b=>{ const d = nextUnpaidOccurrence(b,now); return row(`${b.name} (next ${d?formatDate(d):'none'})`, money(b.amount,cur)); }).join('') : row('No bills','')}</table>
+  <h2>Debts</h2><table>${(state.debts||[]).length ? state.debts.map(x=>row(`${x.name} (minimum ${money(x.minPayment,cur)})`, money(x.balance,cur))).join('') : row('No debts','')}</table>
+  <h2>Goals</h2><table>${(state.goals||[]).length ? state.goals.map(g=>row(g.name, `${money(g.saved,cur)} of ${money(g.target,cur)}`)).join('') : row('No goals','')}</table>`;
+}
+function downloadText(text, name, type){
+  const blob = new Blob([text], {type}); const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>{ try{ URL.revokeObjectURL(url); }catch(e){} }, 3000);
+}
+function initExtras(){
+  $('nudgeBackup').addEventListener('click',()=>$('exportBtn').click());
+  $('nudgeLater').addEventListener('click',()=>{ state.backupSnoozeUntil = Date.now() + 3*864e5; saveState(); renderBackupNudge(); });
+  document.querySelectorAll('[data-viewmode]').forEach(b=>b.addEventListener('click',()=>{ state.viewMode = b.dataset.viewmode; saveState(); applyViewMode(); showToast(state.viewMode==='simple' ? 'Simple view on.' : 'Showing everything.'); }));
+  $('presetForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const name = $('presetName').value.trim(), amount = round2($('presetAmount').value);
+    if(!name || !(amount > 0)){ showToast('Give it a name and an amount.'); return; }
+    state.presets = [...getPresets(), {name, amount, category: $('presetCat').value.trim() || 'Everyday'}].slice(0,12);
+    saveState(); e.target.reset(); renderAll();
+  });
+  $('presetReset').addEventListener('click',()=>{ state.presets = null; saveState(); renderAll(); });
+  document.addEventListener('click',e=>{
+    const dp = e.target.closest('[data-del-preset]');
+    if(dp){ state.presets = getPresets().filter((_,i)=>i!==Number(dp.dataset.delPreset)); saveState(); renderAll(); return; }
+    const pay = e.target.closest('[data-pay-bill]');
+    if(pay){
+      const bill = state.bills.find(b=>b.id===pay.dataset.payBill); if(!bill) return;
+      const d = nextUnpaidOccurrence(bill, new Date()); if(!d) return;
+      const iso = toISODate(d), amt = Number(bill.amount)||0;
+      bill.paidDates = [...(bill.paidDates||[]).filter(x=>x >= toISODate(addDays(new Date(),-60))), iso];
+      bill.lastPaid = {date: iso, amount: amt};
+      state.balance = round2(state.balance - amt);
+      saveState(); renderAll();
+      showUndoToast(`${bill.name} marked paid and taken off your balance.`, ()=>unpayBill(bill.id));
+      return;
+    }
+    const un = e.target.closest('[data-unpay-bill]');
+    if(un) unpayBill(un.dataset.unpayBill);
+  });
+  $('csvBtn').addEventListener('click',()=>{
+    if(!(state.spends||[]).length){ showToast('No spending logged yet.'); return; }
+    try{ downloadText(buildSpendingCsv(), 'safespends-spending.csv', 'text/csv;charset=utf-8'); showToast('Spending exported.'); }catch(e){ showToast('An export could not be made in this browser.'); }
+  });
+  $('printBtn').addEventListener('click',()=>{
+    let area = $('printArea');
+    if(!area){ area = document.createElement('div'); area.id = 'printArea'; document.body.appendChild(area); }
+    area.innerHTML = buildPrintSummary();
+    try{ window.print(); }catch(e){ showToast('Printing is not available in this browser.'); }
+  });
+}
+function unpayBill(id){
+  const bill = state.bills.find(b=>b.id===id);
+  if(!bill || !bill.lastPaid) return;
+  bill.paidDates = (bill.paidDates||[]).filter(x=>x !== bill.lastPaid.date);
+  state.balance = round2(state.balance + (Number(bill.lastPaid.amount)||0));
+  delete bill.lastPaid;
+  saveState(); renderAll(); showToast('Undone. The bill is back in your plan.');
+}
+
+function formatMonthYear(d){ return d ? d.toLocaleDateString('en-US',{month:'long', year:'numeric'}) : '—'; }
+
+function switchView(view){
+  document.querySelectorAll('.view').forEach(el=>el.classList.add('hidden'));
+  const target = $('view-'+view);
+  if(target) target.classList.remove('hidden');
+  document.querySelectorAll('[data-view]').forEach(btn=>btn.classList.toggle('active', btn.dataset.view===view));
+  window.scrollTo({top:0,behavior:'smooth'});
+  try{ const act = document.querySelector('#bottomNav .tab.active'); if(act && act.scrollIntoView) act.scrollIntoView({inline:'center', block:'nearest', behavior:'smooth'}); }catch(e){}
+}
+
+function renderAmountChips(){
+  const sym = SYMBOLS[state.currency] || '$';
+  $('amountChips').innerHTML = [1,5,10,20].map(v=>`<button type="button" class="amt-chip" data-amt="${v}">+ ${sym}${v}</button>`).join('');
+}
+function renderPresets(){
+  const sym = SYMBOLS[state.currency] || '$';
+  $('presetChips').innerHTML = !getPresets().length ? '' : '<span class="plabel">Quick log</span>' + getPresets().map((p,i)=>`<button type="button" class="preset-chip" data-preset="${i}">${escapeHtml(p.name)} · <b>${sym}${p.amount}</b></button>`).join('');
+}
+
+function thingsForToday(calc){
+  const next = calc.future[0];
+  return [
+    {id:'log', time:'30 sec', text:'Log any spending from today — even one small thing counts.'},
+    {id:'glance', time:'1 min', text: next ? `Glance at what’s coming up: ${next.item.name}, ${formatDate(next.date)}. It is already in the plan.` : 'Glance at Coming up, so nothing can surprise you later.'},
+    {id:'adjust', time:'10 sec', text: calc.rawPool < 0 ? 'Pick one small thing to adjust — just one. That is enough for today.' : 'Notice it: your bills before payday are protected. That is enough for today.'}
+  ];
+}
+
+function renderThings(calc){
+  const todayISO = toISODate(calc.today);
+  if(!state.checklist || state.checklist.date !== todayISO) state.checklist = {date:todayISO, done:[]};
+  const done = new Set(state.checklist.done || []);
+  const things = thingsForToday(calc);
+  $('thingsList').innerHTML = things.map(t=>`
+    <div class="thing ${done.has(t.id)?'done':''}">
+      <button class="box" type="button" data-check="${t.id}" aria-label="Mark done: ${escapeHtml(t.text)}">${done.has(t.id)?'✓':''}</button>
+      <div class="t-main"><div class="t-text">${escapeHtml(t.text)}</div></div>
+      <div class="t-time">${t.time}</div>
+    </div>`).join('');
+  const n = things.filter(t=>done.has(t.id)).length;
+  $('thingsCount').textContent = n === 0 ? 'No rush. One is plenty.' : n < 3 ? `${n} done — that counts. Small is fine.` : 'All three done. That is a good day, quietly.';
+}
+
+function renderNotes(){
+  const wrap = $('notesList');
+  const notes = [...(state.notes||[])].sort((a,b)=>b.createdAt-a.createdAt).slice(0,8);
+  if(!notes.length){ wrap.innerHTML = '<div class="empty">Nothing parked yet. The first thought that pops up — put it here.</div>'; return; }
+  wrap.innerHTML = notes.map(n=>{
+    const d = new Date(n.createdAt);
+    return `<div class="note-item"><div><p>${escapeHtml(n.text)}</p><div class="n-meta">${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})} · ${d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</div></div><button class="btn btn-ghost btn-small" type="button" data-delete-note="${n.id}">Done</button></div>`;
+  }).join('');
+}
+
+function renderMonthVisuals(calc){
+  const cur = state.currency;
+  const t = calc.today;
+  const monthSpends = (state.spends||[]).filter(s=>{
+    const d = new Date(s.createdAt);
+    return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth();
+  });
+  const spentMonth = round2(monthSpends.reduce((sum,s)=>sum+s.amount,0));
+  const protectedAmt = round2(calc.billTotal + calc.debtTotal);
+  const pool = calc.pool;
+  const total = round2(spentMonth + protectedAmt + pool);
+  $('legendSafe').textContent = money(pool, cur);
+  $('legendProt').textContent = money(protectedAmt, cur);
+  $('legendSpent').textContent = money(spentMonth, cur);
+  $('monthTotalNote').textContent = total > 0
+    ? `Together that is ${money(total,cur)} — every part of it has a job, including the part that is simply yours to spend.`
+    : 'Add a spend or a bill and this picture starts to fill in.';
+  const C = 2 * Math.PI * 52;
+  const seg = (el, frac, offsetFrac) => {
+    const len = Math.max(0, Math.min(1, frac)) * C;
+    el.setAttribute('stroke-dasharray', `${Math.max(0, len - 3)} ${C}`);
+    el.setAttribute('stroke-dashoffset', String(-offsetFrac * C));
+  };
+  const spentF = total > 0 ? spentMonth/total : 0;
+  const protF = total > 0 ? protectedAmt/total : 0;
+  const safeF = total > 0 ? pool/total : 0;
+  seg($('donutSafe'), safeF, 0);
+  seg($('donutProt'), protF, safeF);
+  seg($('donutSpent'), spentF, safeF + protF);
+  $('donutCenter').textContent = total > 0 ? Math.round(safeF*100) + '%' : '—';
+
+  // Every day this month
+  const dim = daysInMonth(t.getFullYear(), t.getMonth());
+  const perDay = new Array(dim).fill(0);
+  monthSpends.forEach(s=>{ perDay[new Date(s.createdAt).getDate()-1] += s.amount; });
+  const maxSpend = Math.max(1, ...perDay);
+  $('monthBars').innerHTML = perDay.map((v,i)=>{
+    const h = v > 0 ? Math.max(8, Math.round(v/maxSpend*100)) : 4;
+    const cls = (i+1 === t.getDate()) ? 'bar today' : (v > 0 ? 'bar spent' : 'bar');
+    return `<div class="${cls}" style="height:${h}%" title="${t.toLocaleDateString('en-US',{month:'short'})} ${i+1}: ${money(v,cur)}"></div>`;
+  }).join('');
+  const monthName = t.toLocaleDateString('en-US',{month:'long'});
+  $('monthBarsStart').textContent = `${monthName} 1`;
+  $('monthBarsMid').textContent = `Today · ${monthName} ${t.getDate()}`;
+  $('monthBarsEnd').textContent = `${monthName} ${dim}`;
+  const activeDays = perDay.filter(v=>v>0).length;
+  $('monthBarsNote').textContent = monthSpends.length
+    ? `You logged spending on ${activeDays} day${activeDays===1?'':'s'} this month, ${money(spentMonth,cur)} in all. The tall bar is today.`
+    : 'Nothing logged this month yet — the shape appears as you go.';
+
+  // The days to payday
+  const n = Math.min(calc.daysLeft, 35);
+  if(calc.daysLeft === 0){
+    $('paydayBars').innerHTML = '';
+    $('paydayBarsNote').textContent = `Payday is today · ${formatDate(calc.payday)}`;
+  }else{
+    let bars = '<div class="paybar today" title="Today"></div>';
+    for(let i=1;i<n;i++) bars += '<div class="paybar"></div>';
+    if(calc.daysLeft <= 35) bars += '<div class="paybar payday" title="Payday"></div>';
+    $('paydayBars').innerHTML = bars;
+    $('paydayBarsNote').textContent = `${calc.daysLeft} day${calc.daysLeft===1?'':'s'} · payday ${formatDate(calc.payday)} · about ${money(calc.perDay,cur)} a day`;
+  }
+}
+
+function renderWins(calc){
+  const wins = [];
+  wins.push({text:'Planner set up — the hardest part is done'});
+  const protectedCount = calc.upcoming.length;
+  if(protectedCount > 0) wins.push({text:`${protectedCount} payment${protectedCount===1?'':'s'} protected before payday, automatically`});
+  if((state.spends||[]).length > 0) wins.push({text:`${state.spends.length} spend${state.spends.length===1?'':'s'} logged — awareness is the whole game`});
+  if((state.notes||[]).length > 0) wins.push({text:`${state.notes.length} thought${state.notes.length===1?'':'s'} parked out of your head`});
+  const doneCount = (state.checklist && state.checklist.done) ? state.checklist.done.length : 0;
+  if(doneCount === 3) wins.push({text:'All three small things done today'});
+  $('winsList').innerHTML = wins.map(w=>`<span class="win"><span class="tick">✓</span>${escapeHtml(w.text)}</span>`).join('');
+}
+
+function renderAll(){
+  if(!state.setupComplete){ showWizard(); return; }
+  showApp();
+  applyTheme();
+  const calc = calculateSafeToSpend(state, new Date());
+  const cur = state.currency;
+
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  $('greetEyebrow').textContent = now.toLocaleDateString('en-US',{weekday:'long', day:'numeric', month:'long'}).toUpperCase();
+  $('greetTitle').textContent = state.name ? `${greeting}, ${state.name}` : greeting;
+
+  $('heroLabel').textContent = state.heroLabel || 'Safe to spend today';
+  const paydayReached = calc.payday <= calc.today;
+  const spentToday = round2((state.spends||[]).filter(s=>{ const d = new Date(s.createdAt); return d.getFullYear()===calc.today.getFullYear() && d.getMonth()===calc.today.getMonth() && d.getDate()===calc.today.getDate(); }).reduce((sum,s)=>sum+(Number(s.amount)||0),0));
+  const pace = calc.daysLeft > 0 ? round2((calc.pool + spentToday) / calc.daysLeft) : calc.perDay;
+  const leftToday = Math.max(0, round2(pace - spentToday));
+  $('heroPerDay').textContent = paydayReached ? '—' : money(leftToday, cur);
+  $('heroPool').textContent = paydayReached ? '—' : money(calc.pool, cur);
+  $('heroDays').textContent = calc.daysLeft === 0 ? 'Today' : String(calc.daysLeft);
+  $('heroPayday').textContent = formatDate(calc.payday);
+  $('heroSub').textContent = calc.daysLeft === 0
+    ? 'Your payday has arrived. Confirm it in the check-in below and your number will update.'
+    : (spentToday > 0
+      ? `left for today — you started today at ${money(pace,cur)}, and you have logged ${money(spentToday,cur)} so far.`
+      : `for today — ${money(calc.pool,cur)} has to last until ${formatDate(calc.payday)}, with bills already set aside.`);
+
+  $('railPool').textContent = paydayReached ? '—' : money(calc.pool, cur);
+  $('railDays').textContent = calc.daysLeft === 0 ? 'Payday today' : `${calc.daysLeft} days to payday`;
+  $('railPayday').textContent = formatDate(calc.payday);
+  $('sbMonth').textContent = calc.today.toLocaleDateString('en-US',{month:'long'});
+  $('sbDays').textContent = calc.daysLeft === 0 ? 'Payday today' : `${calc.daysLeft} days to payday`;
+  $('sbPool').textContent = paydayReached ? 'Confirm payday first' : `${money(calc.pool,cur)} still yours`;
+
+  $('bdBalance').textContent = money(calc.balance, cur);
+  $('bdBills').textContent = '− ' + money(calc.billTotal, cur);
+  $('bdDebts').textContent = '− ' + money(calc.debtTotal, cur);
+  $('bdSavings').textContent = '− ' + money(calc.savings, cur);
+  $('bdPool').textContent = money(calc.pool, cur);
+
+  const next = calc.future[0];
+  if(next){
+    const protectedNow = next.date >= calc.today && next.date < calc.payday;
+    $('oneThingText').innerHTML = `Next up: <strong>${escapeHtml(next.item.name)}</strong> — ${money(next.amount,cur)} on ${formatDate(next.date)}.${protectedNow ? ' It is already protected inside your number.' : (next.date.getTime() === calc.payday.getTime() ? ' It falls on payday, so it is counted in your next period.' : ' It falls after payday, so it is not subtracted yet.')}`;
+  }else{
+    $('oneThingText').textContent = 'Nothing is due before payday. The number above is yours to use, gently.';
+  }
+
+  if(calc.rawPool < 0){
+    $('statusTitle').textContent = 'Let’s adjust gently';
+    $('statusText').textContent = `bills, minimums and savings are ${money(Math.abs(calc.rawPool),cur)} more than the balance before payday. One small change is enough to start.`;
+  }else if(calc.pool === 0){
+    $('statusTitle').textContent = 'Everything is protected';
+    $('statusText').textContent = 'there is no extra pool left this period, and your essentials are covered by the plan.';
+  }else{
+    $('statusTitle').textContent = 'You’re on track';
+    $('statusText').textContent = 'your bills and minimum payments before payday are protected first, and the rest is honestly yours.';
+  }
+
+  const focusOn = !!state.focusMode;
+  document.body.classList.toggle('focus-on', focusOn);
+  $('focusToggle').setAttribute('aria-pressed', String(focusOn));
+  $('focusNote').classList.toggle('hidden', !focusOn);
+
+  const banner = $('paydayBanner');
+  if(calc.payday <= calc.today){
+    banner.classList.remove('hidden');
+    $('checkinAmount').value = state.payAmount || '';
+    $('checkinDate').value = toISODate(suggestedNextPayday(state.nextPayday, state.payFrequency));
+  }else{
+    banner.classList.add('hidden');
+  }
+
+  renderPresets();
+  renderAmountChips();
+  renderThings(calc);
+  renderUpcoming(calc);
+  renderRecentSpends();
+  renderNotes();
+  renderMonthVisuals(calc);
+  renderWins(calc);
+  renderGoals();
+  renderCalendar();
+  renderEnvelopes();
+  renderMoneyIn();
+  renderBackupNudge(); applyViewMode(); renderPresetEditor();
+  renderMilestones();
+  $('lastBackupLine').textContent = state.lastBackupAt
+    ? `Your last backup was downloaded ${new Date(state.lastBackupAt).toLocaleDateString('en-US',{month:'short', day:'numeric', year:'numeric'})}.`
+    : 'Your first backup has not been downloaded yet.';
+  renderBills(calc);
+  renderDebts(calc);
+  syncSettingsForm();
+}
+
+function renderUpcoming(calc){
+  const wrap = $('upcomingList');
+  const items = calc.future.slice(0,6);
+  if(!items.length){ wrap.innerHTML = '<div class="empty">No bills or debt minimums added yet.</div>'; return; }
+  wrap.innerHTML = items.map(x=>{
+    const protectedNow = x.date >= calc.today && x.date < calc.payday;
+    return `<div class="item"><div class="date-badge"><strong>${x.date.getDate()}</strong><span>${x.date.toLocaleDateString('en-US',{month:'short'})}</span></div><div class="item-main" style="flex:1"><div class="item-title">${escapeHtml(x.item.name)}</div><div class="item-meta">${x.type} · ${formatDate(x.date)} · ${frequencyLabel(x.item.frequency)}<br>${protectedNow?'<strong>Protected in this period</strong>':(x.date.getTime() === calc.payday.getTime() ? 'Due on payday — counted in your next period, not subtracted now' : 'After payday — not subtracted now')}</div></div><div class="item-amount">${money(x.amount,state.currency)}</div></div>`;
+  }).join('');
+}
+function renderRecentSpends(){
+  const wrap = $('recentSpends');
+  const spends = [...(state.spends||[])].sort((a,b)=>b.createdAt-a.createdAt).slice(0,10);
+  if(!spends.length){ wrap.innerHTML = '<div class="empty">Nothing logged yet. Anything you add lands here — and it stays editable.</div>'; return; }
+  wrap.innerHTML = spends.map(s=>{
+    const d = new Date(s.createdAt);
+    return `<div class="item"><div class="item-main"><div class="item-title">${escapeHtml(s.note)}</div><div class="item-meta">${escapeHtml(s.category||'Everyday')} · ${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})} ${d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</div><div class="item-actions"><button class="btn btn-ghost btn-small" type="button" data-delete-spend="${s.id}">Remove & restore balance</button></div></div><div class="item-amount">− ${money(s.amount,state.currency)}</div></div>`;
+  }).join('');
+}
+function renderBills(calc){
+  const wrap = $('billsList');
+  if(!state.bills.length){ wrap.innerHTML = '<div class="empty">No bills yet. Add the first one above.</div>'; return; }
+  const sorted = state.bills.map(item=>{
+    const d = nextUnpaidOccurrence(item,new Date());
+    const protectedNow = d && d >= calc.today && d < calc.payday;
+    return {item,d,protectedNow};
+  }).sort((a,b)=>(a.d||new Date(8640000000000000))-(b.d||new Date(8640000000000000)));
+  wrap.innerHTML = sorted.map(({item,d,protectedNow})=>`
+    <div class="item"><div class="item-main"><div class="item-title">${escapeHtml(item.name)}</div><div class="item-meta">Next due: ${d?formatDate(d):'No upcoming date'} · ${frequencyLabel(item.frequency)}<br>${protectedNow?'<strong>Protected before payday</strong>':(d && d.getTime() === calc.payday.getTime() ? 'Due on payday — counted in your next period' : 'Not subtracted in this pay period')}</div><div class="item-actions">${d?`<button class="btn btn-gold btn-small" type="button" data-pay-bill="${item.id}">Mark paid</button>`:''}${item.lastPaid && item.lastPaid.date >= toISODate(new Date())?`<button class="btn btn-ghost btn-small" type="button" data-unpay-bill="${item.id}">Undo paid</button>`:''}<button class="btn btn-soft btn-small" type="button" data-edit-bill="${item.id}">Edit</button><button class="btn btn-danger btn-small" type="button" data-delete-bill="${item.id}">Delete</button></div></div><div class="item-amount">${money(item.amount,state.currency)}</div></div>`).join('');
+}
+function sortDebtsForPayoff(debts, strategy){
+  const group = d => (Number(d.balance)||0) > 0 ? 0 : 1;
+  const arr = [...debts];
+  if(strategy === 'avalanche'){
+    arr.sort((a,b)=> group(a)-group(b) || (Number(b.apr)||0)-(Number(a.apr)||0) || (Number(a.balance)||0)-(Number(b.balance)||0) || a.name.localeCompare(b.name));
+  }else{
+    arr.sort((a,b)=> group(a)-group(b) || (Number(a.balance)||0)-(Number(b.balance)||0) || (Number(b.apr)||0)-(Number(a.apr)||0) || a.name.localeCompare(b.name));
+  }
+  return arr;
+}
+
+function simulateDebts(debts, extraMonthly, strategy){
+  const items = debts.filter(d=>(Number(d.balance)||0)>0).map(d=>({name:d.name, balance:round2(d.balance), min:round2(d.minPayment), apr:Number(d.apr)||0}));
+  if(!items.length) return null;
+  const ordered = sortDebtsForPayoff(items, strategy);
+  let months = 0, totalInterest = 0, stuck = false, guard = 0, freedMin = 0;
+  while(items.some(i=>i.balance>0) && guard < 600){
+    guard++;
+    const startTotal = round2(items.reduce((s,i)=>s+i.balance,0));
+    items.forEach(it=>{ if(it.balance>0){ const intr = round2(it.balance * it.apr / 1200); it.balance = round2(it.balance + intr); totalInterest = round2(totalInterest + intr); } });
+    let leftover = 0;
+    items.forEach(it=>{ if(it.balance>0){ const pay = Math.min(it.balance, it.min); it.balance = round2(it.balance - pay); leftover = round2(leftover + (it.min - pay)); } });
+    // Rollover: minimums of debts already paid off (plus any unused part of this month's minimums) go to the target debt
+    let remaining = Math.max(0, round2((round2(extraMonthly)||0) + freedMin + leftover));
+    for(const it of ordered){
+      if(remaining <= 0) break;
+      if(it.balance > 0){ const pay = Math.min(it.balance, remaining); it.balance = round2(it.balance - pay); remaining = round2(remaining - pay); }
+    }
+    items.forEach(it=>{ if(it.balance<=0 && !it.done){ it.done = true; freedMin = round2(freedMin + it.min); } });
+    months++;
+    const endTotal = round2(items.reduce((s,i)=>s+i.balance,0));
+    if(endTotal >= startTotal && items.some(i=>i.balance>0)){ stuck = true; break; }
+  }
+  if(items.some(i=>i.balance>0)) stuck = true;
+  return { months, totalInterest, stuck, debtFreeDate: stuck ? null : addMonthsYMD(new Date(), months) };
+}
+
+function renderSim(){
+  const wrap = $('simResults');
+  if(!wrap) return;
+  const withBal = state.debts.filter(d=>(Number(d.balance)||0)>0);
+  const extra = Math.max(0, Number(state.simExtra)||0);
+  if(!withBal.length){
+    wrap.innerHTML = '<div class="empty">Add what is still owed on a debt below, and the planner will map the way out — including what a little extra each month would do.</div>';
+    return;
+  }
+  const base = simulateDebts(state.debts, 0, state.debtStrategy);
+  const plan = simulateDebts(state.debts, extra, state.debtStrategy);
+  if(!plan || plan.stuck){
+    wrap.innerHTML = '<div class="notice notice-gold"><strong>At this pace, interest is growing faster than the payments.</strong> That is information, not failure. Try adding a small extra amount above and watch a date appear — even a little extra, aimed at one debt, changes the story.</div>';
+    return;
+  }
+  const fmtDate = d => d ? d.toLocaleDateString('en-US',{month:'long', year:'numeric'}) : '—';
+  let note;
+  if(extra > 0 && base && !base.stuck){
+    const savedInterest = Math.max(0, round2(base.totalInterest - plan.totalInterest));
+    const savedMonths = base.months - plan.months;
+    note = 'Compared with minimums only, this path keeps <strong>' + money(savedInterest, state.currency) + '</strong> of interest in your pocket' + (savedMonths > 0 ? ' and finishes <strong>' + savedMonths + ' month' + (savedMonths===1?'':'s') + ' sooner</strong>' : '') + '.';
+  }else if(extra > 0 && base && base.stuck){
+    note = 'Minimums alone could not get there — this extra is what makes the date real.';
+  }else{
+    note = 'This path uses minimums only. Add an extra amount above — even a small one — and watch the date move closer.';
+  }
+  wrap.innerHTML = '<div class="sim-grid">'
+    + '<div class="sim-stat"><span>Debt-free by</span><strong>' + formatMonthYear(plan.debtFreeDate) + '</strong></div>'
+    + '<div class="sim-stat"><span>Months from now</span><strong>' + plan.months + '</strong></div>'
+    + '<div class="sim-stat"><span>Interest on this path</span><strong>' + money(plan.totalInterest, state.currency) + '</strong></div>'
+    + '</div><p class="muted" style="margin:12px 0 0">' + note + '</p>';
+}
+
+function renderDebts(calc){
+  const wrap = $('debtsList');
+  const totalOwed = round2(state.debts.reduce((s,d)=>s+(Number(d.balance)||0),0));
+  const totalMin = round2(state.debts.reduce((s,d)=>s+(Number(d.minPayment)||0),0));
+  $('debtTotalOwed').textContent = money(totalOwed, state.currency);
+  $('debtTotalMin').textContent = money(totalMin, state.currency);
+  $('debtExtraStat').textContent = money(state.simExtra ?? 50, state.currency);
+  document.querySelectorAll('[data-strategy]').forEach(b=>b.classList.toggle('active', b.dataset.strategy === state.debtStrategy));
+  if(document.activeElement !== $('extraInput')) $('extraInput').value = state.simExtra ?? 50;
+  if(!state.debts.length){ wrap.innerHTML = '<div class="empty">No debts added. That is fine — add one only if you have a minimum payment.</div>'; renderSim(); return; }
+  const ordered = sortDebtsForPayoff(state.debts, state.debtStrategy);
+  const targetId = (ordered.find(d=>(Number(d.balance)||0)>0) || {}).id;
+  wrap.innerHTML = ordered.map((item, idx)=>{
+    const d = nextOccurrence(item, new Date());
+    const protectedNow = d && d >= calc.today && d < calc.payday;
+    const bal = Number(item.balance)||0;
+    return `<div class="item"><div class="rank">${idx+1}</div><div class="item-main" style="flex:1"><div class="item-title">${escapeHtml(item.name)}${item.id===targetId?'<span class="badge">Start here — extra goes here first</span>':''}</div><div class="item-meta">${bal?`Still owed: ${money(bal, state.currency)} · `:'No balance added yet — add what is still owed to include it in the plan.<br>'}Minimum ${money(item.minPayment, state.currency)} · due ${d?formatDate(d):'—'} · ${frequencyLabel(item.frequency)}${Number(item.apr)?`<br>Interest: ${Number(item.apr)}% APR`:''}<br>${protectedNow?'<strong>Minimum protected before payday</strong>':(d && d.getTime() === calc.payday.getTime() ? 'Due on payday — counted in your next period' : 'Minimum not subtracted in this pay period')}</div><div class="item-actions"><button class="btn btn-soft btn-small" type="button" data-edit-debt="${item.id}">Edit</button><button class="btn btn-danger btn-small" type="button" data-delete-debt="${item.id}">Delete</button></div></div></div>`;
+  }).join('');
+  renderSim();
+}
+
+function renderMoneyIn(){
+  const pd = parseDate(state.nextPayday);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const days = pd ? Math.round((pd.getTime() - today.getTime()) / 864e5) : null;
+  $('miNextTitle').textContent = pd ? formatDate(pd) : 'Next payday not set';
+  $('miDaysLine').textContent = days === null ? 'Set your next payday below, so the plan knows what it is working towards.'
+    : days > 1 ? `That is in ${days} days. Everything on your Today screen is paced to reach it.`
+    : days === 1 ? 'That is tomorrow. The plan is already paced to reach it.'
+    : 'Your payday has arrived. When you are ready, use the check-in at the top of the page — your balance updates and the plan rolls forward.';
+  $('miUsual').textContent = state.payFrequency === 'irregular' ? 'Changes each time' : (Number(state.payAmount) > 0 ? money(state.payAmount, state.currency) : 'Not set yet');
+  $('miBalanceNow').textContent = money(state.balance || 0, state.currency);
+  $('miPatternLabel').textContent = frequencyLabel(state.payFrequency);
+  $('miFreq').value = state.payFrequency || 'biweekly';
+  $('miAmount').value = state.payAmount || '';
+  $('miNext').value = state.nextPayday || '';
+  if(!pd){ $('miPaydayList').innerHTML = '<div class="empty">No payday set yet — add it above and the coming paydays will appear here.</div>'; $('miIrregularNote').textContent = ''; return; }
+  if(state.payFrequency === 'irregular'){
+    $('miPaydayList').innerHTML = `<div class="item"><div class="item-main" style="flex:1"><div class="item-title">${formatDate(pd)}</div><div class="item-meta">Your next expected payday — the one you set</div></div></div>`;
+    $('miIrregularNote').textContent = 'Irregular income has no fixed pattern to project, so only the date you set is shown. Update it here whenever a new one is expected.';
+    return;
+  }
+  $('miIrregularNote').textContent = '';
+  const rows = [];
+  let d = new Date(pd.getFullYear(), pd.getMonth(), pd.getDate());
+  for(let i = 0; i < 4; i++){
+    const dd = Math.round((d.getTime() - today.getTime()) / 864e5);
+    rows.push(`<div class="item"><div class="item-main" style="flex:1"><div class="item-title">${formatDate(d)}</div><div class="item-meta">${i === 0 ? 'Next payday' : 'Payday ' + (i + 1)}${dd >= 0 ? ' · in ' + dd + ' day' + (dd === 1 ? '' : 's') : ''}</div></div><span class="item-amount">${money(state.payAmount || 0, state.currency)}</span></div>`);
+    d = stepPayday(d, state.payFrequency, 1);
+  }
+  $('miPaydayList').innerHTML = rows.join('');
+}
+
+function computeMilestones(){
+  const spends = state.spends || [];
+  const distinctDays = new Set(spends.map(s=>{ const d = new Date(s.createdAt); return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); }));
+  const goals = state.goals || [];
+  const anyGoalHalf = goals.some(g => (Number(g.target)||0) > 0 && (Number(g.saved)||0) >= (Number(g.target)||0) / 2);
+  const anyGoalDone = goals.some(g => (Number(g.target)||0) > 0 && (Number(g.saved)||0) >= (Number(g.target)||0));
+  const anyDebtPlan = (state.debts||[]).some(d => (Number(d.balance)||0) > 0);
+  // only counts a debt that was seen owing money and is now at zero (a debt typed in at 0 is not a payoff)
+  const anyDebtZero = (state.debts||[]).some(d => (Number(d.balance)||0) === 0 && state.debtsSeenOwing && state.debtsSeenOwing[d.id]);
+  return [
+    {id:'setup', title:'Planner set up', desc:'You gave your money a home base. Everything else builds on this.', earned: !!state.setupComplete},
+    {id:'firstlog', title:'First spend logged', desc:'The first honest number is the hardest one. Done.', earned: spends.length >= 1},
+    {id:'firstbill', title:'First bill protected', desc:'A bill is set aside before payday — it cannot surprise you now.', earned: (state.bills||[]).length >= 1},
+    {id:'debtplan', title:'Payoff plan in place', desc:'Your debts are in order, with one clear place for extra money to go.', earned: anyDebtPlan},
+    {id:'firstgoal', title:'First goal started', desc:'Saving has a name now, not just a hope.', earned: goals.length >= 1},
+    {id:'days3', title:'Logged on 3 different days', desc:'Three separate days of honest numbers. That is a habit starting.', earned: distinctDays.size >= 3},
+    {id:'noted', title:'A thought parked', desc:'Something is out of your head and written down. Brains are for ideas, not storage.', earned: (state.notes||[]).length >= 1},
+    {id:'logs10', title:'10 spends logged', desc:'Ten real numbers. Your picture of the month is getting sharper.', earned: spends.length >= 10},
+    {id:'days7', title:'Logged on 7 different days', desc:'A full week of days touched. Quiet consistency counts.', earned: distinctDays.size >= 7},
+    {id:'goalhalf', title:'A goal halfway there', desc:'One of your goals is at least half full. The second half is downhill.', earned: anyGoalHalf},
+    {id:'backup', title:'First backup taken', desc:'Your numbers have a spare copy. Future-you says thanks.', earned: (Number(state.lastBackupAt)||0) > 0},
+    {id:'debtzero', title:'A debt fully paid off', desc:'One balance is completely paid off. That line is finished.', earned: anyDebtZero},
+    {id:'goaldone', title:'A goal reached in full', desc:'Target met. Whatever this was for — it is funded.', earned: anyGoalDone}
+  ];
+}
+function renderMilestones(){
+  // Milestones are kept: once reached, the date is saved and never taken back (even if the bill/goal/spend is later deleted)
+  if(!state.milestones || typeof state.milestones !== 'object') state.milestones = {};
+  if(!state.debtsSeenOwing || typeof state.debtsSeenOwing !== 'object') state.debtsSeenOwing = {};
+  let msChanged = false;
+  (state.debts||[]).forEach(d=>{ if((Number(d.balance)||0) > 0 && !state.debtsSeenOwing[d.id]){ state.debtsSeenOwing[d.id] = true; msChanged = true; } });
+  const defs = computeMilestones();
+  defs.forEach(d=>{ if(d.earned && !state.milestones[d.id]){ state.milestones[d.id] = Date.now(); msChanged = true; } });
+  if(msChanged) saveState();
+  defs.forEach(d=>{ d.earned = d.earned || !!state.milestones[d.id]; });
+  const got = defs.filter(d=>d.earned);
+  const next = defs.find(d=>!d.earned);
+  $('msSummary').textContent = got.length === defs.length
+    ? `All ${defs.length} reached. Look how far this has come.`
+    : `${got.length} of ${defs.length} reached${next ? ` — next up: ${next.title.toLowerCase()}.` : '.'}`;
+  $('msBar').style.width = Math.round(got.length / defs.length * 100) + '%';
+  const sorted = [...got, ...defs.filter(d=>!d.earned)];
+  $('msList').innerHTML = sorted.map(d=>{
+    const ts = state.milestones && state.milestones[d.id];
+    const when = ts ? ' · ' + new Date(ts).toLocaleDateString('en-US',{month:'short', day:'numeric', year:'numeric'}) : '';
+    return `<div class="item ms-item ${d.earned ? '' : 'locked'}"><div class="ms-badge ${d.earned ? 'got' : ''}">${d.earned ? '✓' : '·'}</div><div class="item-main" style="flex:1"><div class="item-title">${d.title}</div><div class="item-meta">${d.desc}</div><div class="item-meta"><strong>${d.earned ? 'Reached' + when : 'Not yet'}</strong></div></div></div>`;
+  }).join('');
+}
+
+function renderGoals(){
+  const wrap = $('goalsList');
+  const totalSaved = round2((state.goals||[]).reduce((s,g)=>s+(Number(g.saved)||0),0));
+  const totalTarget = round2((state.goals||[]).reduce((s,g)=>s+(Number(g.target)||0),0));
+  $('goalsSummary').textContent = state.goals.length
+    ? `${money(totalSaved, state.currency)} put away across ${state.goals.length} goal${state.goals.length===1?'':'s'}${totalTarget?` — of ${money(totalTarget, state.currency)} in targets`:''}.`
+    : 'Nothing here yet — the first small goal is the kindest place to start.';
+  if(!state.goals.length){ wrap.innerHTML = '<div class="empty">No goals yet. Add one above — small and kind beats big and someday.</div>'; return; }
+  const C = 2 * Math.PI * 30;
+  wrap.innerHTML = state.goals.map(g=>{
+    const target = Number(g.target)||0, saved = Number(g.saved)||0;
+    const pct = target > 0 ? Math.min(100, Math.round(saved/target*100)) : 0;
+    const left = Math.max(0, round2(target - saved));
+    let reach;
+    if(target > 0 && saved >= target) reach = 'Reached — nicely done.';
+    else if(Number(g.monthly) > 0 && left > 0){ const m = Math.ceil(left / Number(g.monthly)); const d = addMonthsYMD(new Date(), m); reach = `At ${money(g.monthly, state.currency)} a month, you arrive around ${d.toLocaleDateString('en-US',{month:'long', year:'numeric'})}.`; }
+    else if(left > 0) reach = `${money(left, state.currency)} to go — add a monthly amount in Edit and we will estimate the date.`;
+    else reach = '';
+    const len = pct / 100 * C;
+    return `<div class="item" style="display:block"><div class="goal-top">
+      <svg width="76" height="76" viewBox="0 0 76 76" aria-hidden="true"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--bg-soft)" stroke-width="9"/><circle cx="38" cy="38" r="30" fill="none" stroke="var(--mint)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${Math.max(0, len - 2)} ${C}" transform="rotate(-90 38 38)"/><text x="38" y="43" text-anchor="middle" font-family="Georgia,serif" font-size="15" font-weight="600" fill="var(--ink)">${pct}%</text></svg>
+      <div class="goal-info">
+        <div class="item-title">${escapeHtml(g.name)}</div>
+        <div class="item-meta">${money(saved, state.currency)} of ${money(target, state.currency)}${reach ? ' · ' + reach : ''}</div>
+        <form class="putin putin-form" data-goal="${g.id}">
+          <input type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="Amount" aria-label="Amount to put into ${escapeHtml(g.name)}" required>
+          <button class="btn btn-soft btn-small" type="submit">Put in</button>
+        </form>
+        <div class="item-actions"><button class="btn btn-soft btn-small" type="button" data-edit-goal="${g.id}">Edit</button><button class="btn btn-danger btn-small" type="button" data-delete-goal="${g.id}">Delete</button></div>
+      </div>
+    </div></div>`;
+  }).join('');
+}
+
+let calView = null;
+let calSelected = '';
+function occurrencesInMonth(item, year, month){
+  const first = new Date(year, month, 1);
+  const last = new Date(year, month, daysInMonth(year, month));
+  const out = [];
+  let d = nextOccurrence(item, first);
+  let guard = 0;
+  while(d && d <= last && guard < 50){
+    out.push(new Date(d));
+    if(item.frequency === 'once') break;
+    if(item.frequency === 'weekly') d = addDays(d, 7);
+    else if(item.frequency === 'biweekly') d = addDays(d, 14);
+    else if(item.frequency === 'quarterly') d = addMonthsYMD(d, 3);
+    else if(item.frequency === 'yearly') d = addMonthsYMD(d, 12);
+    else d = addMonthsYMD(d, 1);
+    guard++;
+  }
+  return out;
+}
+function stepPayday(date, freq, dir){
+  if(freq === 'weekly') return addDays(date, 7 * dir);
+  if(freq === 'biweekly') return addDays(date, 14 * dir);
+  if(freq === 'monthly') return addMonthsYMD(date, dir);
+  if(freq === 'semimonthly'){
+    if(dir > 0) return suggestedNextPayday(toISODate(date), 'semimonthly');
+    if(date.getDate() > 15) return dateFromParts(date.getFullYear(), date.getMonth(), 15);
+    if(date.getDate() === 15) return dateFromParts(date.getFullYear(), date.getMonth() - 1, daysInMonth(date.getFullYear(), date.getMonth() - 1));
+    return dateFromParts(date.getFullYear(), date.getMonth() - 1, 15);
+  }
+  return addDays(date, 14 * dir);
+}
+function paydaysInMonth(year, month){
+  const anchor = parseDate(state.nextPayday);
+  if(!anchor) return [];
+  const first = new Date(year, month, 1);
+  const last = new Date(year, month, daysInMonth(year, month));
+  if(state.payFrequency === 'irregular') return (anchor >= first && anchor <= last) ? [new Date(anchor)] : [];
+  let d = new Date(anchor);
+  let guard = 0;
+  while(d > last && guard < 80){ d = stepPayday(d, state.payFrequency, -1); guard++; }
+  guard = 0;
+  while(d < first && guard < 80){ d = stepPayday(d, state.payFrequency, 1); guard++; }
+  guard = 0;
+  let back = stepPayday(d, state.payFrequency, -1);
+  while(back >= first && guard < 80){ d = back; back = stepPayday(d, state.payFrequency, -1); guard++; }
+  const out = [];
+  guard = 0;
+  let cur = new Date(d);
+  while(cur <= last && guard < 80){
+    if(cur >= first) out.push(new Date(cur));
+    cur = stepPayday(cur, state.payFrequency, 1);
+    guard++;
+  }
+  return out;
+}
+function renderCalendar(){
+  const now = new Date();
+  if(!calView) calView = {y: now.getFullYear(), m: now.getMonth()};
+  const y = calView.y, m = calView.m;
+  $('calTitle').textContent = new Date(y, m, 1).toLocaleDateString('en-US',{month:'long', year:'numeric'});
+  const dim = daysInMonth(y, m);
+  const startDow = new Date(y, m, 1).getDay();
+  const events = {};
+  const addEv = (date, label, cls) => { if(date.getFullYear() === y && date.getMonth() === m){ const k = date.getDate(); (events[k] = events[k] || []).push({label, cls}); } };
+  (state.bills || []).forEach(b => occurrencesInMonth(b, y, m).forEach(d => addEv(d, b.name, 'chip-bill')));
+  (state.debts || []).forEach(dbt => occurrencesInMonth(dbt, y, m).forEach(d => addEv(d, dbt.name + ' min', 'chip-debt')));
+  paydaysInMonth(y, m).forEach(d => addEv(d, 'Payday', 'chip-pay'));
+  const spentByDay = {};
+  (state.spends || []).forEach(s => { const d = new Date(s.createdAt); if(d.getFullYear() === y && d.getMonth() === m){ spentByDay[d.getDate()] = round2((spentByDay[d.getDate()] || 0) + s.amount); } });
+  Object.keys(spentByDay).forEach(k => addEv(new Date(y, m, Number(k)), 'Spent ' + money(spentByDay[k], state.currency), 'chip-spent'));
+  let cells = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(dw => `<div class="cal-dow">${dw}</div>`).join('');
+  const prevDim = daysInMonth(y, m - 1);
+  for(let i = 0; i < startDow; i++) cells += `<div class="cal-day dim"><span class="cal-num">${prevDim - startDow + 1 + i}</span></div>`;
+  const todayISO = toISODate(now);
+  for(let day = 1; day <= dim; day++){
+    const iso = toISODate(new Date(y, m, day));
+    const evs = events[day] || [];
+    const chips = evs.slice(0, 2).map(e => `<span class="cal-chip ${e.cls}">${escapeHtml(e.label)}</span>`).join('') + (evs.length > 2 ? `<span class="cal-chip chip-spent">+${evs.length - 2} more</span>` : '');
+    cells += `<button type="button" class="cal-day ${iso === todayISO ? 'today' : ''} ${iso === calSelected ? 'sel' : ''}" data-cal-day="${iso}"><span class="cal-num">${day}</span>${chips}</button>`;
+  }
+  const trail = (7 - ((startDow + dim) % 7)) % 7;
+  for(let i = 1; i <= trail; i++) cells += `<div class="cal-day dim"><span class="cal-num">${i}</span></div>`;
+  $('calGrid').innerHTML = cells;
+  renderCalReadout();
+}
+function renderCalReadout(){
+  const wrap = $('calReadout');
+  if(!calSelected){ wrap.innerHTML = '<div class="empty">Tap any day to see what lands on it.</div>'; return; }
+  const d = parseDate(calSelected);
+  if(!d){ wrap.innerHTML = ''; return; }
+  const lines = [];
+  (state.bills || []).forEach(b => { if(occurrencesInMonth(b, d.getFullYear(), d.getMonth()).some(x => x.getDate() === d.getDate())) lines.push(`${escapeHtml(b.name)} — ${money(b.amount, state.currency)} due`); });
+  (state.debts || []).forEach(dbt => { if(occurrencesInMonth(dbt, d.getFullYear(), d.getMonth()).some(x => x.getDate() === d.getDate())) lines.push(`${escapeHtml(dbt.name)} — minimum ${money(dbt.minPayment, state.currency)} due`); });
+  if(paydaysInMonth(d.getFullYear(), d.getMonth()).some(x => x.getDate() === d.getDate())) lines.push(`Payday — ${money(state.payAmount, state.currency)} expected`);
+  (state.spends || []).filter(s => { const sd = new Date(s.createdAt); return sd.getFullYear() === d.getFullYear() && sd.getMonth() === d.getMonth() && sd.getDate() === d.getDate(); })
+    .forEach(s => lines.push(`${escapeHtml(s.note)} — ${money(s.amount, state.currency)} logged`));
+  wrap.innerHTML = `<div class="item" style="display:block"><div class="item-title">${formatDate(d)}</div>${lines.length ? lines.map(l => `<div class="item-meta" style="font-size:14px;color:var(--ink)">${l}</div>`).join('') : '<div class="item-meta">A quiet day — nothing due, nothing logged.</div>'}</div>`;
+}
+function renderEnvelopes(){
+  const wrap = $('envList');
+  const now = new Date();
+  const spentFor = name => round2((state.spends || []).filter(s => { const d = new Date(s.createdAt); return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && String(s.category || '').toLowerCase() === String(name).toLowerCase(); }).reduce((sum, s) => sum + s.amount, 0));
+  if(!(state.envelopes || []).length){ wrap.innerHTML = '<div class="empty">No envelopes yet. Add one for a kind of spending you want to keep an eye on.</div>'; return; }
+  wrap.innerHTML = state.envelopes.map(env => {
+    const cap = Number(env.cap) || 0;
+    const spent = spentFor(env.name);
+    const pct = cap > 0 ? Math.min(100, Math.round(spent / cap * 100)) : 0;
+    const over = cap > 0 && spent > cap;
+    const left = round2(cap - spent);
+    return `<div class="item" style="display:block">
+      <div style="display:flex;justify-content:space-between;gap:12px"><div class="item-title">${escapeHtml(env.name)}</div><div class="item-amount">${money(spent, state.currency)} <span class="muted" style="font-family:var(--sans);font-size:13px">of ${money(cap, state.currency)}</span></div></div>
+      <div class="env-bar"><div class="env-fill ${over ? 'over' : ''}" style="width:${pct}%"></div></div>
+      <div class="item-meta">${over ? `Over by ${money(Math.abs(left), state.currency)} — that is information, not failure. The money was already counted once, in your number.` : `${money(left, state.currency)} of the cap left this month.`}</div>
+      <div class="item-actions"><button class="btn btn-soft btn-small" type="button" data-edit-env="${env.id}">Edit</button><button class="btn btn-danger btn-small" type="button" data-delete-env="${env.id}">Delete</button></div>
+    </div>`;
+  }).join('');
+}
+function syncSettingsForm(){
+  $('sName').value = state.name || '';
+  $('sCurrency').value = state.currency;
+  $('sBalance').value = state.balance;
+  $('sSavings').value = state.savingsSetAside;
+  $('sFrequency').value = state.payFrequency;
+  $('sPayday').value = state.nextPayday;
+  $('sPayAmount').value = state.payAmount;
+  $('sHeroLabel').value = state.heroLabel || 'Safe to spend today';
+  $('sTheme').value = state.theme || 'light';
+}
+
+function logSpend(amount, note, category){
+  state.spends.push({id:uid(),amount:round2(amount),note,category:category||'Everyday',createdAt:Date.now()});
+  state.balance = round2(state.balance - amount);
+  saveState();
+  renderAll();
+  return state.spends[state.spends.length-1];
+}
+function undoSpend(id){
+  const i = state.spends.findIndex(x=>x.id===id);
+  if(i < 0) return;
+  state.balance = round2(state.balance + state.spends[i].amount);
+  state.spends.splice(i,1);
+  saveState(); renderAll(); showToast('Undone. Your number is back.');
+}
+function showUndoToast(message, undoFn){
+  const t = $('toast'); t.textContent = '';
+  const sp = document.createElement('span'); sp.textContent = message + ' ';
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Undo'; b.className = 'toast-undo';
+  b.addEventListener('click',()=>{ clearTimeout(showToast._timer); t.classList.remove('show','has-undo'); undoFn(); });
+  t.append(sp,b); t.classList.add('show','has-undo');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(()=>t.classList.remove('show','has-undo'), 7000);
+}
+
+function init(){
+  applyTheme();
+  setDefaultDates();
+  syncWizardFromState();
+  if(state.setupComplete) showApp(); else showWizard();
+  renderAll();
+
+  $('themeToggle').addEventListener('click',()=>{
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    applyTheme();
+    saveState();
+    showToast(state.theme === 'dark' ? 'Dark theme on. Same colours, calmer light.' : 'Light theme on.');
+  });
+  $('focusToggle').addEventListener('click',()=>{
+    state.focusMode = !state.focusMode;
+    saveState(); renderAll();
+  });
+  $('logSpendBtn').addEventListener('click',()=>{
+    switchView('home');
+    const card = $('quickCard');
+    if(card) card.scrollIntoView({behavior:'smooth', block:'center'});
+    setTimeout(()=>{ const a = $('quickAmount'); if(a) a.focus(); }, 350);
+  });
+  $('howToggle').addEventListener('click',()=>{
+    $('heroBreakdown').classList.toggle('hidden');
+  });
+  document.querySelectorAll('[data-next]').forEach(btn=>btn.addEventListener('click',()=>{ if(validateWizardStep()) showWizardStep(wizardStep+1); }));
+  document.querySelectorAll('[data-back]').forEach(btn=>btn.addEventListener('click',()=>showWizardStep(wizardStep-1)));
+  $('sampleDataBtn').addEventListener('click', loadSampleData);
+  $('sampleDataBtn2').addEventListener('click', loadSampleData);
+  $('finishWizard').addEventListener('click',()=>{
+    collectWizard();
+    state.setupComplete = true;
+    saveState();
+    showApp();
+    renderAll();
+    showToast('Setup complete. Your Safe-to-Spend number is ready.');
+  });
+  $('wAddBill').addEventListener('click',()=>{
+    const name = $('wbName').value.trim(); const amount = Number($('wbAmount').value); const dueDate = $('wbDate').value;
+    if(!name || $('wbAmount').value==='' || Number.isNaN(amount) || amount < 0 || !dueDate){ showToast('Add a bill name, amount and due date.'); return; }
+    wizardBills.push({id:uid(),name,amount:round2(amount),dueDate,frequency:$('wbFreq').value});
+    $('wbName').value=''; $('wbAmount').value='';
+    renderWizardTempLists();
+  });
+  $('wAddDebt').addEventListener('click',()=>{
+    const name = $('wdName').value.trim(); const minPayment = Number($('wdMin').value); const dueDate = $('wdDate').value;
+    if(!name || $('wdMin').value==='' || Number.isNaN(minPayment) || minPayment < 0 || !dueDate){ showToast('Add a debt name, minimum payment and due date.'); return; }
+    wizardDebts.push({id:uid(),name,balance:round2($('wdBalance').value||0),minPayment:round2(minPayment),apr:round2($('wdApr').value||0),dueDate,frequency:$('wdFreq').value});
+    $('wdName').value=''; $('wdMin').value=''; $('wdBalance').value=''; $('wdApr').value='';
+    renderWizardTempLists();
+  });
+  document.addEventListener('click',e=>{
+    const hb = e.target.closest('[data-help]');
+    if(hb){ const panel = $(hb.dataset.help); if(panel) panel.classList.toggle('hidden'); return; }
+    const preset = e.target.closest('[data-preset]');
+    if(preset){
+      const p = getPresets()[Number(preset.dataset.preset)];
+      if(p){ const sp = logSpend(p.amount, p.name, p.category); showUndoToast(`${p.name} logged.`, ()=>undoSpend(sp.id)); }
+      return;
+    }
+    const chk = e.target.closest('[data-check]');
+    if(chk){
+      const calc = calculateSafeToSpend(state, new Date());
+      const todayISO = toISODate(calc.today);
+      if(!state.checklist || state.checklist.date !== todayISO) state.checklist = {date:todayISO, done:[]};
+      const id = chk.dataset.check;
+      const idx = state.checklist.done.indexOf(id);
+      if(idx >= 0) state.checklist.done.splice(idx,1); else state.checklist.done.push(id);
+      saveState(); renderAll();
+      if(idx < 0) showToast('Done — and yes, that counts.');
+      return;
+    }
+    const dn = e.target.closest('[data-delete-note]');
+    if(dn){
+      state.notes = (state.notes||[]).filter(n=>n.id !== dn.dataset.deleteNote);
+      saveState(); renderAll(); showToast('Note cleared. One less thing to hold.');
+      return;
+    }
+    const rb = e.target.closest('[data-remove-wbill]');
+    if(rb){ wizardBills.splice(Number(rb.dataset.removeWbill),1); renderWizardTempLists(); return; }
+    const rd = e.target.closest('[data-remove-wdebt]');
+    if(rd){ wizardDebts.splice(Number(rd.dataset.removeWdebt),1); renderWizardTempLists(); return; }
+    const ds = e.target.closest('[data-delete-spend]');
+    if(ds){
+      const spend = state.spends.find(s=>s.id===ds.dataset.deleteSpend);
+      if(spend && confirm('Remove this spend and restore the amount to your balance?')){
+        state.balance = round2(state.balance + spend.amount);
+        state.spends = state.spends.filter(s=>s.id!==spend.id);
+        saveState(); renderAll(); showToast('Spend removed and balance restored.');
+      }
+      return;
+    }
+    const db = e.target.closest('[data-delete-bill]');
+    if(db){
+      const bill = state.bills.find(b=>b.id===db.dataset.deleteBill);
+      if(bill && confirm(`Delete bill “${bill.name}”?`)){ state.bills = state.bills.filter(b=>b.id!==bill.id); saveState(); renderAll(); showToast('Bill deleted.'); }
+      return;
+    }
+    const dd = e.target.closest('[data-delete-debt]');
+    if(dd){
+      const debt = state.debts.find(d=>d.id===dd.dataset.deleteDebt);
+      if(debt && confirm(`Delete debt “${debt.name}”?`)){ state.debts = state.debts.filter(d=>d.id!==debt.id); saveState(); renderAll(); showToast('Debt deleted.'); }
+      return;
+    }
+    const eb = e.target.closest('[data-edit-bill]');
+    if(eb){
+      const bill = state.bills.find(b=>b.id===eb.dataset.editBill);
+      if(bill){
+        $('billId').value=bill.id; $('billName').value=bill.name; $('billAmount').value=bill.amount; $('billDate').value=bill.dueDate; $('billFreq').value=bill.frequency;
+        $('billFormTitle').textContent='Edit bill'; $('cancelBillEdit').classList.remove('hidden'); switchView('bills'); $('billName').focus();
+      }
+      return;
+    }
+    const ed = e.target.closest('[data-edit-debt]');
+    if(ed){
+      const debt = state.debts.find(d=>d.id===ed.dataset.editDebt);
+      if(debt){
+        $('debtId').value=debt.id; $('debtName').value=debt.name; $('debtMin').value=debt.minPayment; $('debtBalance').value=debt.balance||''; $('debtApr').value=debt.apr||''; $('debtDate').value=debt.dueDate; $('debtFreq').value=debt.frequency;
+        $('debtFormTitle').textContent='Edit debt'; $('cancelDebtEdit').classList.remove('hidden'); switchView('debts'); $('debtName').focus();
+      }
+      return;
+    }
+    const eg = e.target.closest('[data-edit-goal]');
+    if(eg){
+      const goal = (state.goals||[]).find(g=>g.id===eg.dataset.editGoal);
+      if(goal){
+        $('goalId').value=goal.id; $('goalName').value=goal.name; $('goalTarget').value=goal.target; $('goalSaved').value=goal.saved||''; $('goalMonthly').value=goal.monthly||''; $('goalFromBalance').checked = goal.fromBalance !== false;
+        $('goalFormTitle').textContent='Edit goal'; $('cancelGoalEdit').classList.remove('hidden'); switchView('goals'); $('goalName').focus();
+      }
+      return;
+    }
+    const dg = e.target.closest('[data-delete-goal]');
+    if(dg){
+      const goal = (state.goals||[]).find(g=>g.id===dg.dataset.deleteGoal);
+      if(goal && confirm(`Delete goal “${goal.name}”? Any amount already put in stays counted in your balance history — deleting the goal does not move money back.`)){ state.goals = state.goals.filter(g=>g.id!==goal.id); saveState(); renderAll(); showToast('Goal deleted.'); }
+      return;
+    }
+    const ee = e.target.closest('[data-edit-env]');
+    if(ee){
+      const env = (state.envelopes||[]).find(x=>x.id===ee.dataset.editEnv);
+      if(env){
+        $('envId').value=env.id; $('envName').value=env.name; $('envCap').value=env.cap;
+        $('envFormTitle').textContent='Edit envelope'; $('cancelEnvEdit').classList.remove('hidden'); switchView('envelopes'); $('envName').focus();
+      }
+      return;
+    }
+    const de = e.target.closest('[data-delete-env]');
+    if(de){
+      const env = (state.envelopes||[]).find(x=>x.id===de.dataset.deleteEnv);
+      if(env && confirm(`Delete the “${env.name}” envelope?`)){ state.envelopes = state.envelopes.filter(x=>x.id!==env.id); saveState(); renderAll(); showToast('Envelope deleted.'); }
+      return;
+    }
+    const cd = e.target.closest('[data-cal-day]');
+    if(cd){ calSelected = cd.dataset.calDay; renderCalendar(); return; }
+  });
+
+  $('amountChips').addEventListener('click',e=>{
+    const chip = e.target.closest('[data-amt]');
+    if(!chip) return;
+    const current = Number($('quickAmount').value)||0;
+    $('quickAmount').value = round2(current + Number(chip.dataset.amt)).toFixed(2);
+    $('quickNote').focus();
+  });
+  $('categoryChips').addEventListener('click',e=>{
+    const chip = e.target.closest('[data-category]');
+    if(!chip) return;
+    selectedCategory = chip.dataset.category;
+    document.querySelectorAll('#categoryChips .chip').forEach(c=>c.classList.toggle('active',c===chip));
+    if(selectedCategory !== 'Everyday') $('quickNote').value = selectedCategory;
+    $('quickAmount').focus();
+  });
+  $('quickForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const amount = round2($('quickAmount').value);
+    const note = $('quickNote').value.trim();
+    if(!amount || amount <= 0){ showToast('Add the amount first.'); return; }
+    const sp = logSpend(amount, note || selectedCategory || 'Spend', selectedCategory);
+    $('quickAmount').value=''; $('quickNote').value=''; $('quickAmount').focus();
+    showUndoToast('Added. Your Safe-to-Spend number is updated.', ()=>undoSpend(sp.id));
+  });
+  $('noteForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const text = $('noteText').value.trim();
+    if(!text){ showToast('Type the thought first — even two words.'); return; }
+    state.notes = state.notes || [];
+    state.notes.push({id:uid(), text, createdAt:Date.now()});
+    saveState(); renderAll();
+    $('noteText').value='';
+    showToast('Parked. Your head can let that one go.');
+  });
+  $('billForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const id = $('billId').value || uid();
+    const bill = {id,name:$('billName').value.trim(),amount:round2($('billAmount').value),dueDate:$('billDate').value,frequency:$('billFreq').value};
+    const idx = state.bills.findIndex(b=>b.id===id);
+    if(idx>=0) state.bills[idx]=bill; else state.bills.push(bill);
+    saveState(); e.target.reset(); $('billId').value=''; $('billFormTitle').textContent='Add a bill'; $('cancelBillEdit').classList.add('hidden'); setDefaultDates(); renderAll(); showToast('Bill saved.');
+  });
+  $('cancelBillEdit').addEventListener('click',()=>{ $('billForm').reset(); $('billId').value=''; $('billFormTitle').textContent='Add a bill'; $('cancelBillEdit').classList.add('hidden'); setDefaultDates(); });
+  $('debtForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const id = $('debtId').value || uid();
+    const debt = {id,name:$('debtName').value.trim(),balance:round2($('debtBalance').value||0),minPayment:round2($('debtMin').value),apr:round2($('debtApr').value||0),dueDate:$('debtDate').value,frequency:$('debtFreq').value};
+    const idx = state.debts.findIndex(d=>d.id===id);
+    if(idx>=0) state.debts[idx]=debt; else state.debts.push(debt);
+    saveState(); e.target.reset(); $('debtId').value=''; $('debtFormTitle').textContent='Add a debt'; $('cancelDebtEdit').classList.add('hidden'); setDefaultDates(); renderAll(); showToast('Debt minimum saved.');
+  });
+  $('cancelDebtEdit').addEventListener('click',()=>{ $('debtForm').reset(); $('debtId').value=''; $('debtFormTitle').textContent='Add a debt'; $('cancelDebtEdit').classList.add('hidden'); setDefaultDates(); });
+  $('settingsForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    state.name = $('sName').value.trim();
+    state.currency = $('sCurrency').value;
+    state.balance = round2($('sBalance').value);
+    state.savingsSetAside = round2($('sSavings').value);
+    state.payFrequency = $('sFrequency').value;
+    state.nextPayday = $('sPayday').value;
+    state.payAmount = round2($('sPayAmount').value);
+    state.heroLabel = $('sHeroLabel').value;
+    state.theme = $('sTheme').value;
+    saveState(); renderAll(); showToast('Settings saved.');
+  });
+  $('confirmPayday').addEventListener('click',()=>{
+    const amount = round2($('checkinAmount').value);
+    const nextDate = $('checkinDate').value;
+    if($('checkinAmount').value==='' || Number.isNaN(amount) || amount < 0 || !nextDate){ showToast('Enter the amount received and the next payday.'); return; }
+    state.balance = round2(state.balance + amount);
+    state.nextPayday = nextDate;
+    if(state.payFrequency === 'irregular') state.payAmount = amount;
+    saveState(); renderAll(); showToast('Payday confirmed. Your plan has rolled forward.');
+  });
+  document.querySelectorAll('[data-strategy]').forEach(btn=>btn.addEventListener('click',()=>{
+    state.debtStrategy = btn.dataset.strategy;
+    saveState(); renderAll();
+    showToast(state.debtStrategy === 'snowball' ? 'Snowball: smallest balance first. Quick wins build momentum.' : 'Avalanche: highest interest first. The least interest overall.');
+  }));
+  $('extraInput').addEventListener('change',()=>{
+    state.simExtra = Math.max(0, round2($('extraInput').value) || 0);
+    saveState(); renderAll();
+  });
+  $('goalForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const id = $('goalId').value || uid();
+    const goal = {id, name:$('goalName').value.trim(), target:round2($('goalTarget').value), saved:round2($('goalSaved').value || 0), monthly:round2($('goalMonthly').value || 0), fromBalance:$('goalFromBalance').checked};
+    state.goals = state.goals || [];
+    const idx = state.goals.findIndex(g=>g.id===id);
+    if(idx>=0) state.goals[idx]=goal; else state.goals.push(goal);
+    saveState(); e.target.reset(); $('goalId').value=''; $('goalFromBalance').checked = true; $('goalFormTitle').textContent='Add a goal'; $('cancelGoalEdit').classList.add('hidden'); renderAll(); showToast('Goal saved.');
+  });
+  $('cancelGoalEdit').addEventListener('click',()=>{ $('goalForm').reset(); $('goalId').value=''; $('goalFromBalance').checked = true; $('goalFormTitle').textContent='Add a goal'; $('cancelGoalEdit').classList.add('hidden'); });
+  document.addEventListener('submit',e=>{
+    const f = e.target.closest && e.target.closest('.putin-form');
+    if(!f) return;
+    e.preventDefault();
+    const goal = (state.goals||[]).find(g=>g.id===f.dataset.goal);
+    const input = f.querySelector('input');
+    const amt = round2(input ? input.value : 0);
+    if(!goal || !amt || amt <= 0){ showToast('Add an amount to put in.'); return; }
+    goal.saved = round2((Number(goal.saved)||0) + amt);
+    if(goal.fromBalance !== false) state.balance = round2(state.balance - amt);
+    saveState(); renderAll();
+    showToast(`Put in. ${goal.name} is now at ${money(goal.saved, state.currency)}.`);
+  });
+  $('envForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const id = $('envId').value || uid();
+    const env = {id, name:$('envName').value.trim(), cap:round2($('envCap').value)};
+    state.envelopes = state.envelopes || [];
+    const idx = state.envelopes.findIndex(x=>x.id===id);
+    if(idx>=0) state.envelopes[idx]=env; else state.envelopes.push(env);
+    saveState(); e.target.reset(); $('envId').value=''; $('envFormTitle').textContent='Add an envelope'; $('cancelEnvEdit').classList.add('hidden'); renderAll(); showToast('Envelope saved.');
+  });
+  $('cancelEnvEdit').addEventListener('click',()=>{ $('envForm').reset(); $('envId').value=''; $('envFormTitle').textContent='Add an envelope'; $('cancelEnvEdit').classList.add('hidden'); });
+  $('miForm').addEventListener('submit', e=>{
+    e.preventDefault();
+    const amount = round2($('miAmount').value);
+    const nextDate = $('miNext').value;
+    if($('miAmount').value === '' || Number.isNaN(amount) || amount < 0){ showToast('Enter your usual amount — for irregular income, the lowest amount you can count on.'); return; }
+    if(!nextDate){ showToast('Choose your next payday.'); return; }
+    state.payFrequency = $('miFreq').value;
+    state.payAmount = amount;
+    state.nextPayday = nextDate;
+    saveState(); renderAll(); showToast('Money-in details saved.');
+  });
+  $('calPrev').addEventListener('click',()=>{ if(!calView) calView = {y:new Date().getFullYear(), m:new Date().getMonth()}; calView = {y: calView.m === 0 ? calView.y - 1 : calView.y, m: calView.m === 0 ? 11 : calView.m - 1}; renderCalendar(); });
+  $('calNext').addEventListener('click',()=>{ if(!calView) calView = {y:new Date().getFullYear(), m:new Date().getMonth()}; calView = {y: calView.m === 11 ? calView.y + 1 : calView.y, m: calView.m === 11 ? 0 : calView.m + 1}; renderCalendar(); });
+  $('exportBtn').addEventListener('click',()=>{
+    try{
+      state.lastBackupAt = Date.now();
+      saveState();
+      const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'safespends-backup.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>{ try{ URL.revokeObjectURL(url); }catch(e){} }, 3000);
+      renderAll();
+      showToast('Backup downloaded. Keep it somewhere safe.');
+    }catch(e){ showToast('A backup could not be made in this browser.'); }
+  });
+  $('importFile').addEventListener('change',e=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      let obj = null;
+      try{ obj = JSON.parse(String(reader.result || '')); }catch(err){}
+      if(!obj || typeof obj !== 'object' || !Array.isArray(obj.bills) || !Array.isArray(obj.debts) || !('setupComplete' in obj)){
+        showToast('That file does not look like a SafeSpends backup.');
+        return;
+      }
+      if(!confirm('Restore this backup? It will replace everything currently in the planner on this device.')) return;
+      state = {...defaultState(), ...obj, bills:obj.bills||[], debts:obj.debts||[], spends:obj.spends||[], notes:obj.notes||[], goals:obj.goals||[], envelopes:obj.envelopes||[]};
+      calView = null; calSelected = '';
+      saveState(); applyTheme(); showApp(); renderAll();
+      showToast('Backup restored. Welcome back.');
+    };
+    reader.onerror = ()=>showToast('That file could not be read.');
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+  $('resetBtn').addEventListener('click',()=>{
+    if(!confirm('Erase all SafeSpends demo data from this browser and restart setup?')) return;
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+    state = defaultState();
+    wizardBills = []; wizardDebts = [];
+    applyTheme();
+    setDefaultDates(); syncWizardFromState(); showWizard(); showToast('Demo reset. Start fresh whenever you are ready.');
+  });
+  document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.view)));
+  initExtras();
+}
+
+if(typeof document !== 'undefined'){
+  document.addEventListener('DOMContentLoaded', init);
+}
+if(typeof globalThis !== 'undefined'){
+  globalThis.__SafeSpendsTest = { calculateSafeToSpend, nextOccurrence, parseDate, toISODate, addDays, suggestedNextPayday, simulateDebts, sortDebtsForPayoff, occurrencesInMonth, paydaysInMonth };
+}
+</script>
+</body>
+</html>
